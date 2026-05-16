@@ -19,17 +19,13 @@ import { createSignInMethod, getSignUpIdentifiersRequiredConnectors } from '../.
 import SignUpIdentifierItem from './SignUpIdentifierItem';
 import styles from './index.module.scss';
 
-const signInIdentifierOptions = Object.values(SignInIdentifier).map((identifier) => ({
-  value: identifier,
-  label: t(`admin_console.sign_in_exp.sign_up_and_sign_in.identifiers_${identifier}`),
-}));
-
-const emailOrPhoneOption = {
-  value: AlternativeSignUpIdentifier.EmailOrPhone,
-  label: t('admin_console.sign_in_exp.sign_up_and_sign_in.identifiers_email_or_sms'),
-};
-
-const signUpIdentifierOptions = [...signInIdentifierOptions, emailOrPhoneOption];
+/** Fork: phone / email-or-phone are not offered as new sign-up identifiers in Console. */
+const signUpIdentifierOptions = [SignInIdentifier.Email, SignInIdentifier.Username].map(
+  (identifier) => ({
+    value: identifier,
+    label: t(`admin_console.sign_in_exp.sign_up_and_sign_in.identifiers_${identifier}`),
+  })
+);
 
 type Props = {
   readonly signInExperience: SignInExperience;
@@ -73,20 +69,11 @@ function SignUpIdentifiersEditBox({ signInExperience }: Props) {
       const forgotPasswordMethods = getValues('forgotPasswordMethods');
       const forgotPasswordMethodsSet = new Set(forgotPasswordMethods);
 
-      const newForgotPasswordMethods = [
-        // Add email verification code if email-related identifier is added
-        ...((identifier === SignInIdentifier.Email ||
-          identifier === AlternativeSignUpIdentifier.EmailOrPhone) &&
+      const newForgotPasswordMethods =
+        identifier === SignInIdentifier.Email &&
         !forgotPasswordMethodsSet.has(ForgotPasswordMethod.EmailVerificationCode)
           ? [ForgotPasswordMethod.EmailVerificationCode]
-          : []),
-        // Add phone verification code if phone-related identifier is added
-        ...((identifier === SignInIdentifier.Phone ||
-          identifier === AlternativeSignUpIdentifier.EmailOrPhone) &&
-        !forgotPasswordMethodsSet.has(ForgotPasswordMethod.PhoneVerificationCode)
-          ? [ForgotPasswordMethod.PhoneVerificationCode]
-          : []),
-      ];
+          : [];
 
       if (newForgotPasswordMethods.length > 0) {
         setValue(
@@ -158,44 +145,13 @@ function SignUpIdentifiersEditBox({ signInExperience }: Props) {
     [appendSignInMethods, appendForgotPasswordMethods, setValue]
   );
 
-  const options = useMemo<
-    Array<{
-      value: SignUpIdentifier;
-      label: string;
-      disabled?: boolean;
-    }>
-  >(() => {
+  const options = useMemo(() => {
     const identifiersSet = new Set(signUpIdentifiers.map(({ identifier }) => identifier));
     const availableOptions = signUpIdentifierOptions.filter(
       ({ value }) => !identifiersSet.has(value)
     );
 
-    return availableOptions.map(({ value, label }) => {
-      // Disable email and phone options if email or phone is selected
-      if (value === SignInIdentifier.Email || value === SignInIdentifier.Phone) {
-        return {
-          value,
-          label,
-          disabled: identifiersSet.has(AlternativeSignUpIdentifier.EmailOrPhone),
-        };
-      }
-
-      // Disable emailOrPhone option if email or phone is selected
-      if (value === AlternativeSignUpIdentifier.EmailOrPhone) {
-        return {
-          value,
-          label,
-          disabled:
-            identifiersSet.has(SignInIdentifier.Email) ||
-            identifiersSet.has(SignInIdentifier.Phone),
-        };
-      }
-
-      return {
-        value,
-        label,
-      };
-    });
+    return availableOptions.map(({ value, label }) => ({ value, label }));
   }, [signUpIdentifiers]);
 
   return (

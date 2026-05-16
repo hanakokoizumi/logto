@@ -3,7 +3,8 @@ import { SignInIdentifier } from '@logto/schemas';
 
 import { type SignUpIdentifier } from '../types';
 
-export const signInIdentifiers = Object.values(SignInIdentifier);
+/** Fork: phone-based sign-in is not configurable from Console. */
+export const signInIdentifiers = [SignInIdentifier.Email, SignInIdentifier.Username];
 
 type SignInIdentifierPhrase = {
   [key in SignInIdentifier]: AdminConsoleKey;

@@ -11,7 +11,6 @@ import {
 import { conditional, type Optional, tryThat } from '@silverhand/essentials';
 import { literal, object, string, z } from 'zod';
 
-import { EnvSet } from '#src/env-set/index.js';
 import {
   validateSignUp,
   validateSignIn,
@@ -251,16 +250,8 @@ export default function signInExperiencesRoutes<T extends ManagementApiRouter>(
         );
       }
 
-      // Guard the quota for BYUI if the hideLogtoBranding is set to true
+      // Guard the quota for BYUI if the hideLogtoBranding is set to true (cloud only; OSS skips quota)
       if (hideLogtoBranding) {
-        // Hide Logto branding is only available for Logto Cloud
-        assertThat(
-          EnvSet.values.isCloud,
-          new RequestError({
-            code: 'request.invalid_input',
-            details: 'Hide Logto branding is not supported in this environment',
-          })
-        );
         await quota.guardTenantUsageByKey('bringYourUiEnabled');
       }
       if (passkeySignIn?.enabled) {

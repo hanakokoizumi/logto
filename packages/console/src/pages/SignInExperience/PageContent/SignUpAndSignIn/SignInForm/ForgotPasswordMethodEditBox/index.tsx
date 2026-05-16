@@ -43,7 +43,8 @@ function ForgotPasswordMethodEditBox() {
           const methods = value ?? [];
 
           const availableMethods = Object.values(ForgotPasswordMethod).filter(
-            (method) => !methods.includes(method)
+            (method) =>
+              !methods.includes(method) && method !== ForgotPasswordMethod.PhoneVerificationCode
           );
 
           const handleAddMethod = (method: ForgotPasswordMethod) => {

@@ -13,7 +13,6 @@ import { useParams } from 'react-router-dom';
 
 import SubmitFormChangesActionBar from '@/components/SubmitFormChangesActionBar';
 import UnsavedChangesAlertModal from '@/components/UnsavedChangesAlertModal';
-import { isCloud } from '@/consts/env';
 import ConfirmModal from '@/ds-components/ConfirmModal';
 import TabNav, { TabNavItem } from '@/ds-components/TabNav';
 import useApi from '@/hooks/use-api';
@@ -107,7 +106,7 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
 
       const updatedData = await api
         .patch('api/sign-in-exp', {
-          json: sieFormDataParser.toSignInExperience(formValues, { isCloud }),
+          json: sieFormDataParser.toSignInExperience(formValues),
         })
         .json<SignInExperience>();
 
@@ -146,8 +145,8 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
           return;
         }
 
-        const formatted = sieFormDataParser.toSignInExperience(formData, { isCloud });
-        const original = signInExperienceToUpdatedDataParser(data, { isCloud });
+        const formatted = sieFormDataParser.toSignInExperience(formData);
+        const original = signInExperienceToUpdatedDataParser(data);
 
         // Sign-in methods changed, need to show confirm modal first.
         if (!hasSignUpAndSignInConfigChanged(original, formatted)) {
@@ -182,13 +181,10 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
       setValue('forgotPasswordMethods', []);
     } else if (!formData.forgotPasswordMethods) {
       // If this is null, we should initialize it based on current connector setup
-      // if has email connector, then add email verification code method, also for sms connector
+      // (email verification code when an email connector is available).
       const initialMethods = [
         ...(isConnectorTypeEnabled(ConnectorType.Email)
           ? [ForgotPasswordMethod.EmailVerificationCode]
-          : []),
-        ...(isConnectorTypeEnabled(ConnectorType.Sms)
-          ? [ForgotPasswordMethod.PhoneVerificationCode]
           : []),
       ];
 

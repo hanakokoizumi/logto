@@ -151,10 +151,7 @@ export const sieFormDataParser = {
       },
     };
   },
-  toSignInExperience: (
-    formData: SignInExperienceForm,
-    { isCloud = true }: { isCloud?: boolean } = {}
-  ): SignInExperiencePageManagedData => {
+  toSignInExperience: (formData: SignInExperienceForm): SignInExperiencePageManagedData => {
     const {
       branding,
       createAccountEnabled,
@@ -172,7 +169,7 @@ export const sieFormDataParser = {
       socialSignIn,
       signInMode: createAccountEnabled ? SignInMode.SignInAndRegister : SignInMode.SignIn,
       customCss: customCss?.length ? customCss : null,
-      ...conditional(isCloud && { hideLogtoBranding }),
+      hideLogtoBranding,
     };
   },
 };
@@ -196,8 +193,7 @@ export const sieFormDataParser = {
  * - `emailBlocklistPolicy`
  */
 export const signInExperienceToUpdatedDataParser = (
-  data: SignInExperience,
-  { isCloud = true }: { isCloud?: boolean } = {}
+  data: SignInExperience
 ): SignInExperiencePageManagedData => {
   const {
     signUp,
@@ -219,6 +215,6 @@ export const signInExperienceToUpdatedDataParser = (
       ...signUp,
       secondaryIdentifiers: signUp.secondaryIdentifiers ?? [],
     },
-    ...conditional(isCloud && { hideLogtoBranding }),
+    hideLogtoBranding,
   };
 };

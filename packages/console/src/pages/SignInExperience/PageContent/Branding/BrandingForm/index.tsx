@@ -24,7 +24,6 @@ function BrandingForm() {
   const {
     watch,
     register,
-    unregister,
     setValue,
     control,
     formState: { errors, isDirty },
@@ -54,12 +53,6 @@ function BrandingForm() {
       handleResetColor();
     }
   }, [handleResetColor, isDarkModeEnabled, isDirty]);
-
-  useEffect(() => {
-    if (!isCloud) {
-      unregister('hideLogtoBranding');
-    }
-  }, [unregister]);
 
   return (
     <Card>
@@ -125,10 +118,7 @@ function BrandingForm() {
           />
         </>
       )}
-      <HideLogtoBrandingField
-        variant={isCloud ? 'cloud' : 'oss'}
-        isEnabledInCloud={isHideLogtoBrandingEnabled}
-      />
+      <HideLogtoBrandingField isCloud={isCloud} isEnabledInCloud={isHideLogtoBrandingEnabled} />
     </Card>
   );
 }

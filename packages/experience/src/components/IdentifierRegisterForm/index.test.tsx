@@ -104,7 +104,7 @@ describe('<IdentifierRegisterForm />', () => {
   });
 
   describe('username register form', () => {
-    test('username with initial numeric char should throw', async () => {
+    test('username with initial numeric char is allowed', async () => {
       const { queryByText, getByText, container } = renderForm();
       const submitButton = getByText('action.create_account');
       const usernameInput = container.querySelector('input[name=identifier]');
@@ -114,16 +114,6 @@ describe('<IdentifierRegisterForm />', () => {
       act(() => {
         fireEvent.change(usernameInput, { target: { value: '1username' } });
         fireEvent.submit(submitButton);
-      });
-
-      await waitFor(() => {
-        expect(queryByText('error.username_should_not_start_with_number')).not.toBeNull();
-        expect(registerWithUsername).not.toBeCalled();
-      });
-
-      act(() => {
-        fireEvent.change(usernameInput, { target: { value: 'username' } });
-        fireEvent.blur(usernameInput);
       });
 
       await waitFor(() => {
