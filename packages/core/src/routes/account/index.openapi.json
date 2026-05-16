@@ -277,13 +277,10 @@
       "delete": {
         "operationId": "DeletePrimaryEmail",
         "summary": "Delete primary email",
-        "description": "Delete primary email for the user, a logto-verification-id header is required for checking sensitive permissions. The request is rejected if it would remove the user's last identifier.",
+        "description": "Primary email deletion is not allowed; the endpoint responds with 400.",
         "responses": {
-          "204": {
-            "description": "The primary email was deleted successfully."
-          },
           "400": {
-            "description": "The request would remove the user's last identifier."
+            "description": "Primary email removal is not allowed, or the request is otherwise invalid."
           },
           "401": {
             "description": "Permission denied, the verification record is invalid."

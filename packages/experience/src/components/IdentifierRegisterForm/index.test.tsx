@@ -121,6 +121,51 @@ describe('<IdentifierRegisterForm />', () => {
       });
     });
 
+    test('username with tg_ prefix should throw', async () => {
+      const { queryByText, getByText, container } = renderForm();
+      const submitButton = getByText('action.create_account');
+      const usernameInput = container.querySelector('input[name=identifier]');
+
+      assert(usernameInput, new Error('username input not found'));
+
+      act(() => {
+        fireEvent.change(usernameInput, { target: { value: 'tg_reserved' } });
+        fireEvent.submit(submitButton);
+      });
+
+      await waitFor(() => {
+        expect(queryByText('error.username_should_not_start_with_tg_prefix')).not.toBeNull();
+        expect(registerWithUsername).not.toBeCalled();
+      });
+
+      act(() => {
+        fireEvent.change(usernameInput, { target: { value: 'username' } });
+        fireEvent.blur(usernameInput);
+      });
+
+      await waitFor(() => {
+        expect(queryByText('error.username_should_not_start_with_tg_prefix')).toBeNull();
+      });
+    });
+
+    test('username with TG_ prefix should throw', async () => {
+      const { queryByText, getByText, container } = renderForm();
+      const submitButton = getByText('action.create_account');
+      const usernameInput = container.querySelector('input[name=identifier]');
+
+      assert(usernameInput, new Error('username input not found'));
+
+      act(() => {
+        fireEvent.change(usernameInput, { target: { value: 'TG_user' } });
+        fireEvent.submit(submitButton);
+      });
+
+      await waitFor(() => {
+        expect(queryByText('error.username_should_not_start_with_tg_prefix')).not.toBeNull();
+        expect(registerWithUsername).not.toBeCalled();
+      });
+    });
+
     test('username with special character should throw', async () => {
       const { queryByText, getByText, container } = renderForm();
       const submitButton = getByText('action.create_account');

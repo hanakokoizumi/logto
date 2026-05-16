@@ -13,8 +13,7 @@ const errors = {
   required_field_missing: "'{{field}}'を入力してください",
   required_field_missing_plural: "少なくとも1つの'{{field}}'を入力する必要があります",
   more_details: '詳細を見る',
-  username_pattern_error:
-    'ユーザー名には、文字、数字、またはアンダースコアしか含めることができず、数字で始めることはできません。',
+  username_pattern_error: 'ユーザー名には、文字、数字、またはアンダースコアのみを使用できます。',
   email_pattern_error: 'メールアドレスが無効です。',
   phone_pattern_error: '電話番号が無効です。',
   insecure_contexts: '安全でないコンテキスト（ノンHTTP）はサポートされていません。',

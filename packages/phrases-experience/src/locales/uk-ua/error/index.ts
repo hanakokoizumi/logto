@@ -9,6 +9,7 @@ const error = {
   password_required: "Пароль є обов'язковим",
   username_exists: "Таке ім'я користувача вже існує",
   username_should_not_start_with_number: "Ім'я користувача не повинно починатися з цифри",
+  username_should_not_start_with_tg_prefix: "Ім'я користувача не повинно починатися з tg_.",
   username_invalid_charset: "Ім'я користувача може містити лише літери, цифри та підкреслення.",
   invalid_email: 'Недійсна електронна пошта',
   invalid_phone: 'Недійсний номер телефону',

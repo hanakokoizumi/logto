@@ -1,6 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import { domainRegEx, emailOrEmailDomainRegEx } from './regex.js';
+import { domainRegEx, emailOrEmailDomainRegEx, usernameRegEx } from './regex.js';
+
+describe('usernameRegEx', () => {
+  it('allows typical usernames', () => {
+    expect(usernameRegEx.test('user_1')).toBe(true);
+    expect(usernameRegEx.test('tg')).toBe(true);
+    expect(usernameRegEx.test('tgx')).toBe(true);
+    expect(usernameRegEx.test('TG_user')).toBe(false);
+  });
+
+  it('rejects usernames that start with the reserved tg_ prefix (case-insensitive)', () => {
+    expect(usernameRegEx.test('tg_')).toBe(false);
+    expect(usernameRegEx.test('tg_123')).toBe(false);
+    expect(usernameRegEx.test('tg_bot')).toBe(false);
+    expect(usernameRegEx.test('TG_bot')).toBe(false);
+    expect(usernameRegEx.test('Tg_x')).toBe(false);
+  });
+});
 
 describe('Regular expressions should work as expected', () => {
   it('should allow valid domains that consists of 3 parts. E.g. foo.bar.com', () => {

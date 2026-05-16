@@ -10,6 +10,7 @@ const error = {
   password_required: 'Şifre gerekli.',
   username_exists: 'Kullanıcı adı mevcut.',
   username_should_not_start_with_number: 'Kullanıcı adı sayı ile başlayamaz.',
+  username_should_not_start_with_tg_prefix: 'Kullanıcı adı tg_ ile başlayamaz.',
   username_invalid_charset: 'Kullanıcı adı yalnızca harf,sayı veya alt çizgi içermeli.',
   invalid_email: 'E-posta adresi geçersiz',
   invalid_phone: 'Telefon numarası geçersiz',

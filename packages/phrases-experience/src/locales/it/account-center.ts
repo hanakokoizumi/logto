@@ -82,7 +82,7 @@ const account_center = {
     not_set: 'Non impostato',
     social_sign_in: 'Accesso social',
     social_not_linked: 'Non collegato',
-    email_phone: 'Posta elettronica / Telefono',
+    email_phone: 'Posta elettronica',
     email: 'Posta elettronica',
     phone: 'Telefono',
     password: "Parola d'accesso",

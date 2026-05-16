@@ -79,7 +79,7 @@ const account_center = {
     not_set: 'Не встановлено',
     social_sign_in: 'Соціальний вхід',
     social_not_linked: 'Не прив’язано',
-    email_phone: 'Електронна пошта / Телефон',
+    email_phone: 'Електронна пошта',
     email: 'Електронна пошта',
     phone: 'Телефон',
     password: 'Пароль',

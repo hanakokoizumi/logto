@@ -13,8 +13,7 @@ const errors = {
   required_field_missing: 'Please enter {{field}}',
   required_field_missing_plural: 'You have to enter at least one {{field}}',
   more_details: 'More details',
-  username_pattern_error:
-    'Username should only contain letters, numbers, or underscore and should not start with a number.',
+  username_pattern_error: 'Username should only contain letters, numbers, or underscores.',
   email_pattern_error: 'The email address is invalid.',
   phone_pattern_error: 'The phone number is invalid.',
   insecure_contexts: 'Insecure contexts (non-HTTPS) are not supported.',

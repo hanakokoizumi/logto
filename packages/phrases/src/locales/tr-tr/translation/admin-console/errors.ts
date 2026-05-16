@@ -13,8 +13,7 @@ const errors = {
   required_field_missing: 'Lütfen {{field}} giriniz',
   required_field_missing_plural: 'En az bir {{field}} girmek zorundasınız.',
   more_details: 'Daha çok detay',
-  username_pattern_error:
-    'Kullanıcı adı yalnızca harf, sayı veya alt çizgi içermeli ve bir sayı ile başlamamalıdır.',
+  username_pattern_error: 'Kullanıcı adı yalnızca harf, sayı veya alt çizgi içerebilir.',
   email_pattern_error: 'E-posta adresi geçersiz.',
   phone_pattern_error: 'Telefon numarası geçersiz.',
   insecure_contexts: 'Güvenli olmayan bağlamlar (HTTPS olmayan) desteklenmez.',

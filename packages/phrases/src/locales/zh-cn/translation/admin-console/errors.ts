@@ -13,7 +13,7 @@ const errors = {
   required_field_missing: '请输入{{field}}',
   required_field_missing_plural: '至少需要输入一个{{field}}',
   more_details: '查看详情',
-  username_pattern_error: '用户名只能包含英文字母、数字或下划线，且不以数字开头。',
+  username_pattern_error: '用户名只能包含英文字母、数字或下划线。',
   email_pattern_error: '邮箱地址无效',
   phone_pattern_error: '手机号码无效',
   insecure_contexts: '不支持不安全的上下文（非 HTTPS）。',

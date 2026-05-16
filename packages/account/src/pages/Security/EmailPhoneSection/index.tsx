@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import PageContext from '@ac/Providers/PageContextProvider/PageContext';
-import { deletePrimaryEmail, deletePrimaryPhone } from '@ac/apis/account';
+import { deletePrimaryPhone } from '@ac/apis/account';
 import EmailIcon from '@ac/assets/icons/email.svg?react';
 import PhoneIcon from '@ac/assets/icons/phone.svg?react';
 import ConfirmModal from '@ac/components/ConfirmModal';
@@ -18,8 +18,6 @@ import { getPendingReturn, setPendingReturn } from '@ac/utils/account-center-rou
 import { sessionStorage } from '@ac/utils/session-storage';
 
 import styles from './index.module.scss';
-
-type RemoveType = 'email' | 'phone';
 
 const EmailPhoneSection = () => {
   const { t } = useTranslation();
@@ -33,10 +31,9 @@ const EmailPhoneSection = () => {
     setToast,
   } = useContext(PageContext);
   const handleError = useErrorHandler();
-  const deletePrimaryEmailApi = useApi(deletePrimaryEmail);
   const deletePrimaryPhoneApi = useApi(deletePrimaryPhone);
 
-  const [pendingRemoveType, setPendingRemoveType] = useState<RemoveType>();
+  const [pendingRemovePhone, setPendingRemovePhone] = useState(false);
 
   const emailControl = accountCenterSettings?.fields.email;
   const phoneControl = accountCenterSettings?.fields.phone;
@@ -56,10 +53,9 @@ const EmailPhoneSection = () => {
     [navigate]
   );
 
-  const removeIdentifier = useCallback(
-    async (removeType: RemoveType, verifiedId: string) => {
-      const deleteApi = removeType === 'email' ? deletePrimaryEmailApi : deletePrimaryPhoneApi;
-      const [error] = await deleteApi(verifiedId);
+  const removePhone = useCallback(
+    async (verifiedId: string) => {
+      const [error] = await deletePrimaryPhoneApi(verifiedId);
 
       if (error) {
         await handleError(error, {
@@ -72,63 +68,39 @@ const EmailPhoneSection = () => {
       }
 
       await refreshUserInfo();
-      setToast(
-        t(
-          removeType === 'email'
-            ? 'account_center.security.email_removed'
-            : 'account_center.security.phone_removed'
-        )
-      );
+      setToast(t('account_center.security.phone_removed'));
     },
-    [
-      deletePrimaryEmailApi,
-      deletePrimaryPhoneApi,
-      handleError,
-      refreshUserInfo,
-      setToast,
-      setVerificationId,
-      t,
-    ]
+    [deletePrimaryPhoneApi, handleError, refreshUserInfo, setToast, setVerificationId, t]
   );
 
   const handleRemoveConfirm = useCallback(async () => {
-    if (!pendingRemoveType) {
+    if (!pendingRemovePhone) {
       return;
     }
 
-    setPendingRemoveType(undefined);
+    setPendingRemovePhone(false);
 
     if (verificationId) {
-      await removeIdentifier(pendingRemoveType, verificationId);
+      await removePhone(verificationId);
       return;
     }
 
-    sessionStorage.setPendingVerifiedAction(
-      pendingRemoveType === 'email' ? 'remove-email' : 'remove-phone'
-    );
+    sessionStorage.setPendingVerifiedAction('remove-phone');
     navigateTo(verifiedActionRoute);
-  }, [pendingRemoveType, verificationId, navigateTo, removeIdentifier]);
+  }, [pendingRemovePhone, verificationId, navigateTo, removePhone]);
 
   useEffect(() => {
     if (!verificationId) {
       return;
     }
 
-    const pendingAction = sessionStorage.getPendingVerifiedAction();
-    const pendingActionRemoveType =
-      pendingAction === 'remove-email'
-        ? 'email'
-        : pendingAction === 'remove-phone'
-          ? 'phone'
-          : undefined;
-
-    if (!pendingActionRemoveType) {
+    if (sessionStorage.getPendingVerifiedAction() !== 'remove-phone') {
       return;
     }
 
     sessionStorage.clearPendingVerifiedAction();
-    void removeIdentifier(pendingActionRemoveType, verificationId);
-  }, [removeIdentifier, verificationId]);
+    void removePhone(verificationId);
+  }, [removePhone, verificationId]);
 
   if (!showEmail && !showPhone) {
     return null;
@@ -138,7 +110,7 @@ const EmailPhoneSection = () => {
     <>
       <div className={classNames(styles.section, layoutClassNames.section)}>
         <div className={classNames(styles.sectionTitle, layoutClassNames.sectionTitle)}>
-          {t('account_center.security.email_phone')}
+          {t('account_center.security.email')}
         </div>
         <div className={classNames(styles.card, layoutClassNames.card)}>
           {showEmail && (
@@ -160,17 +132,6 @@ const EmailPhoneSection = () => {
                         ? t('account_center.security.change')
                         : t('account_center.security.add')}
                     </button>
-                    {emailValue && (
-                      <button
-                        type="button"
-                        className={styles.removeButton}
-                        onClick={() => {
-                          setPendingRemoveType('email');
-                        }}
-                      >
-                        {t('account_center.security.remove')}
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -204,7 +165,7 @@ const EmailPhoneSection = () => {
                         type="button"
                         className={styles.removeButton}
                         onClick={() => {
-                          setPendingRemoveType('phone');
+                          setPendingRemovePhone(true);
                         }}
                       >
                         {t('account_center.security.remove')}
@@ -222,12 +183,8 @@ const EmailPhoneSection = () => {
         </div>
       </div>
       <ConfirmModal
-        isOpen={pendingRemoveType !== undefined}
-        title={
-          pendingRemoveType === 'email'
-            ? 'account_center.security.remove_email_confirmation_title'
-            : 'account_center.security.remove_phone_confirmation_title'
-        }
+        isOpen={pendingRemovePhone}
+        title="account_center.security.remove_phone_confirmation_title"
         confirmText="account_center.security.remove"
         confirmButtonType="danger"
         cancelText="action.cancel"
@@ -235,14 +192,10 @@ const EmailPhoneSection = () => {
           void handleRemoveConfirm();
         }}
         onCancel={() => {
-          setPendingRemoveType(undefined);
+          setPendingRemovePhone(false);
         }}
       >
-        {t(
-          pendingRemoveType === 'email'
-            ? 'account_center.security.remove_email_confirmation_description'
-            : 'account_center.security.remove_phone_confirmation_description'
-        )}
+        {t('account_center.security.remove_phone_confirmation_description')}
       </ConfirmModal>
     </>
   );

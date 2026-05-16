@@ -201,7 +201,7 @@ describe('account (email and phone)', () => {
       await deleteDefaultTenantUser(user.id);
     });
 
-    it('should reject deleting the last identifier', async () => {
+    it('should reject primary email deletion', async () => {
       const primaryEmail = generateEmail();
       const { user, username, password } = await createDefaultTenantUserWithPassword({
         primaryEmail,
@@ -210,93 +210,14 @@ describe('account (email and phone)', () => {
         scopes: [UserScope.Profile, UserScope.Email],
       });
       const verificationRecordId = await createVerificationRecordByPassword(api, password);
-      await updateUser(api, { username: null }, verificationRecordId);
 
       await expectRejects(deletePrimaryEmail(api, verificationRecordId), {
-        code: 'user.last_sign_in_method_required',
+        code: 'account_center.primary_email_deletion_not_allowed',
         status: 400,
       });
 
-      await deleteDefaultTenantUser(user.id);
-    });
-
-    it('should be able to delete primary email if email is the sign-up identifier and another identifier remains', async () => {
-      const primaryEmail = generateEmail();
-      const { user, username, password } = await createDefaultTenantUserWithPassword({
-        primaryEmail,
-      });
-      const api = await signInAndGetUserApi(username, password, {
-        scopes: [UserScope.Profile, UserScope.Email],
-      });
-      const verificationRecordId = await createVerificationRecordByPassword(api, password);
-
-      try {
-        await enableAllPasswordSignInMethods({
-          identifiers: [SignInIdentifier.Email],
-          password: true,
-          verify: true,
-        });
-
-        await deletePrimaryEmail(api, verificationRecordId);
-
-        const userInfo = await getUserInfo(api);
-        expect(userInfo).toHaveProperty('primaryEmail', null);
-      } finally {
-        await enableAllPasswordSignInMethods();
-      }
-
-      await deleteDefaultTenantUser(user.id);
-    });
-
-    it('should be able to delete primary email if email or phone is the sign-up identifier and another identifier remains', async () => {
-      const primaryEmail = generateEmail();
-      const { user, username, password } = await createDefaultTenantUserWithPassword({
-        primaryEmail,
-      });
-      const api = await signInAndGetUserApi(username, password, {
-        scopes: [UserScope.Profile, UserScope.Email],
-      });
-      const verificationRecordId = await createVerificationRecordByPassword(api, password);
-
-      try {
-        await enableAllPasswordSignInMethods({
-          identifiers: [SignInIdentifier.Email, SignInIdentifier.Phone],
-          password: true,
-          verify: true,
-        });
-
-        await deletePrimaryEmail(api, verificationRecordId);
-
-        const userInfo = await getUserInfo(api);
-        expect(userInfo).toHaveProperty('primaryEmail', null);
-      } finally {
-        await enableAllPasswordSignInMethods();
-      }
-
-      await deleteDefaultTenantUser(user.id);
-    });
-
-    it('should be able to delete primary email', async () => {
-      const { user, username, password } = await createDefaultTenantUserWithPassword();
-      const api = await signInAndGetUserApi(username, password, {
-        scopes: [UserScope.Profile, UserScope.Email],
-      });
-      const verificationRecordId = await createVerificationRecordByPassword(api, password);
-      const newEmail = generateEmail();
-      const newVerificationRecordId = await createAndVerifyVerificationCode(api, {
-        type: SignInIdentifier.Email,
-        value: newEmail,
-      });
-
-      await updatePrimaryEmail(api, newEmail, verificationRecordId, newVerificationRecordId);
-
       const userInfo = await getUserInfo(api);
-      expect(userInfo).toHaveProperty('primaryEmail', newEmail);
-
-      await deletePrimaryEmail(api, verificationRecordId);
-
-      const userInfoAfterDelete = await getUserInfo(api);
-      expect(userInfoAfterDelete).toHaveProperty('primaryEmail', null);
+      expect(userInfo).toHaveProperty('primaryEmail', primaryEmail);
 
       await deleteDefaultTenantUser(user.id);
     });

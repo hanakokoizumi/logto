@@ -78,10 +78,10 @@ export default function emailAndPhoneRoutes<T extends UserRouter>(...args: Route
   router.delete(
     `${accountApiPrefix}/primary-email`,
     koaGuard({
-      status: [204, 400, 401],
+      status: [400, 401],
     }),
-    async (ctx, next) => {
-      const { id: userId, scopes, identityVerified } = ctx.auth;
+    async (ctx) => {
+      const { scopes, identityVerified } = ctx.auth;
       assertThat(
         identityVerified,
         new RequestError({ code: 'verification_record.permission_denied', status: 401 })
@@ -94,19 +94,7 @@ export default function emailAndPhoneRoutes<T extends UserRouter>(...args: Route
 
       assertThat(scopes.has(UserScope.Email), 'auth.unauthorized');
 
-      const [user, ssoIdentities] = await Promise.all([
-        findUserById(userId),
-        userSsoIdentities.findUserSsoIdentitiesByUserId(userId),
-      ]);
-      assertUserHasRemainingIdentifier(user, { primaryEmail: null }, ssoIdentities.length);
-
-      const updatedUser = await updateUserById(userId, { primaryEmail: null });
-
-      ctx.appendDataHookContext('User.Data.Updated', { user: updatedUser });
-
-      ctx.status = 204;
-
-      return next();
+      assertThat(false, 'account_center.primary_email_deletion_not_allowed', 400);
     }
   );
 

@@ -11,6 +11,8 @@ const error = {
   username_exists: "Ce Nom d'utilisateur existe déjà",
   username_should_not_start_with_number:
     "Le nom d'utilisateur ne doit pas commencer par un chiffre",
+  username_should_not_start_with_tg_prefix:
+    "Le nom d'utilisateur ne doit pas commencer par « tg_ ».",
   username_invalid_charset:
     "Le nom d'utilisateur ne doit contenir que des lettres, des chiffres ou des caractères de soulignement.",
   invalid_email: "L'email n'est pas valide",

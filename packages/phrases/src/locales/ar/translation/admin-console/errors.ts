@@ -13,8 +13,7 @@ const errors = {
   required_field_missing: 'يرجى إدخال {{field}}',
   required_field_missing_plural: 'يجب عليك إدخال ما لا يقل عن {{field}} واحد',
   more_details: 'مزيد من التفاصيل',
-  username_pattern_error:
-    'يجب أن يحتوي اسم المستخدم فقط على الحروف والأرقام والشرطة السفلية ولا يجب أن يبدأ برقم.',
+  username_pattern_error: 'يجب أن يحتوي اسم المستخدم فقط على الحروف والأرقام والشرطة السفلية.',
   email_pattern_error: 'عنوان البريد الإلكتروني غير صالح.',
   phone_pattern_error: 'رقم الهاتف غير صالح.',
   insecure_contexts: 'السياقات غير الآمنة (غير HTTPS) غير مدعومة.',

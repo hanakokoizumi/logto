@@ -9,6 +9,7 @@ const error = {
   password_required: 'Heslo je povinné',
   username_exists: 'Uživatelské jméno již existuje',
   username_should_not_start_with_number: 'Uživatelské jméno nesmí začínat číslem',
+  username_should_not_start_with_tg_prefix: 'Uživatelské jméno nesmí začínat řetězcem tg_.',
   username_invalid_charset: 'Uživatelské jméno může obsahovat pouze písmena, čísla a podtržítka',
   invalid_email: 'E-mailová adresa je neplatná',
   invalid_phone: 'Telefonní číslo je neplatné',

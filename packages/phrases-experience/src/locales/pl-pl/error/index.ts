@@ -9,6 +9,7 @@ const error = {
   password_required: 'Hasło jest wymagane',
   username_exists: 'Nazwa użytkownika już istnieje',
   username_should_not_start_with_number: 'Nazwa użytkownika nie powinna zaczynać się od liczby',
+  username_should_not_start_with_tg_prefix: 'Nazwa użytkownika nie może zaczynać się od tg_.',
   username_invalid_charset:
     'Nazwa użytkownika powinna zawierać tylko litery, liczby lub podkreślenia.',
   invalid_email: 'Nieprawidłowy adres e-mail',

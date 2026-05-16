@@ -78,7 +78,7 @@ const account_center = {
     not_set: 'Ayarlanmamış',
     social_sign_in: 'Sosyal giriş',
     social_not_linked: 'Bağlanmadı',
-    email_phone: 'E-posta / Telefon',
+    email_phone: 'E-posta',
     email: 'E-posta',
     phone: 'Telefon',
     password: 'Parola',

@@ -9,6 +9,7 @@ const error = {
   password_required: '密码必填',
   username_exists: '用户名已存在',
   username_should_not_start_with_number: '用户名不能以数字开头',
+  username_should_not_start_with_tg_prefix: '用户名不能以 tg_ 开头（不区分大小写）。',
   username_invalid_charset: '用户名只能包含英文字母、数字或下划线。',
   invalid_email: '无效的邮箱',
   invalid_phone: '无效的手机号',

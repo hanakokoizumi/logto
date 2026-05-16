@@ -13,8 +13,7 @@ const errors = {
   required_field_missing: 'โปรดกรอก {{field}}',
   required_field_missing_plural: 'คุณต้องกรอกอย่างน้อยหนึ่ง {{field}}',
   more_details: 'รายละเอียดเพิ่มเติม',
-  username_pattern_error:
-    'ชื่อผู้ใช้ควรมีเฉพาะตัวอักษร ตัวเลข หรือขีดล่าง และไม่ควรขึ้นต้นด้วยตัวเลข',
+  username_pattern_error: 'ชื่อผู้ใช้ควรมีเฉพาะตัวอักษร ตัวเลข หรือขีดล่างเท่านั้น',
   email_pattern_error: 'อีเมลไม่ถูกต้อง',
   phone_pattern_error: 'หมายเลขโทรศัพท์ไม่ถูกต้อง',
   insecure_contexts: 'ไม่รองรับบริบทที่ไม่ปลอดภัย (non-HTTPS)',

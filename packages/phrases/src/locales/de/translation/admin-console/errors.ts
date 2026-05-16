@@ -14,7 +14,7 @@ const errors = {
   required_field_missing_plural: 'Mindestens ein {{field}} muss ausgefüllt sein',
   more_details: 'Mehr Details',
   username_pattern_error:
-    'Der Benutzername sollte nur Buchstaben, Zahlen oder Unterstriche enthalten und nicht mit einer Zahl beginnen.',
+    'Der Benutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten.',
   email_pattern_error: 'Die E-Mail-Adresse ist ungültig.',
   phone_pattern_error: 'Die Telefonnummer ist ungültig.',
   insecure_contexts: 'Unsichere Kontexte (nicht-HTTPS) werden nicht unterstützt.',

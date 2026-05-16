@@ -9,6 +9,7 @@ const error = {
   password_required: 'كلمة المرور مطلوبة',
   username_exists: 'اسم المستخدم موجود بالفعل',
   username_should_not_start_with_number: 'يجب ألا يبدأ اسم المستخدم برقم',
+  username_should_not_start_with_tg_prefix: 'يجب ألا يبدأ اسم المستخدم بـ tg_.',
   username_invalid_charset: 'يجب أن يحتوي اسم المستخدم فقط على الحروف والأرقام والشرطات السفلية.',
   invalid_email: 'البريد الإلكتروني غير صالح',
   invalid_phone: 'رقم الهاتف غير صالح',

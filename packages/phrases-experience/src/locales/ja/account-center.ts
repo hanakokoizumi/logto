@@ -77,7 +77,7 @@ const account_center = {
     not_set: '未設定',
     social_sign_in: 'ソーシャルサインイン',
     social_not_linked: '未連携',
-    email_phone: 'メールアドレス / 電話番号',
+    email_phone: 'メールアドレス',
     email: 'メールアドレス',
     phone: '電話番号',
     password: 'パスワード',

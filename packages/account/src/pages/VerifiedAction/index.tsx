@@ -40,9 +40,6 @@ const VerifiedAction = () => {
       case 'disable-mfa': {
         return accountCenterSettings.fields.mfa === AccountCenterControlValue.Edit;
       }
-      case 'remove-email': {
-        return accountCenterSettings.fields.email === AccountCenterControlValue.Edit;
-      }
       case 'remove-username': {
         return accountCenterSettings.fields.username === AccountCenterControlValue.Edit;
       }

@@ -10,6 +10,7 @@ const error = {
   password_required: 'La password è richiesta',
   username_exists: 'Username esiste già',
   username_should_not_start_with_number: "L'username non dovrebbe iniziare con un numero",
+  username_should_not_start_with_tg_prefix: "L'username non deve iniziare con tg_.",
   username_invalid_charset: "L'username dovrebbe contenere solo lettere, numeri o underscore.",
   invalid_email: "L'email non è valida",
   invalid_phone: 'Il numero di telefono non è valido',

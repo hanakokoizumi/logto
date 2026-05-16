@@ -9,6 +9,7 @@ const error = {
   password_required: '비밀번호는 필수예요.',
   username_exists: '사용자 이름이 이미 존재해요.',
   username_should_not_start_with_number: '사용자 이름은 숫자로 시작하면 안 돼요.',
+  username_should_not_start_with_tg_prefix: '사용자 이름은 tg_로 시작할 수 없어요.',
   username_invalid_charset: '사용자 이름은 문자, 숫자, _(밑줄 문자) 로만 이루어져야 해요.',
   invalid_email: '이메일이 유효하지 않아요.',
   invalid_phone: '휴대전화번호가 유효하지 않아요.',

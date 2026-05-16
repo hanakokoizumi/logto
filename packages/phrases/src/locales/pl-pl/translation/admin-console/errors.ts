@@ -14,7 +14,7 @@ const errors = {
   required_field_missing_plural: 'Musisz wprowadzić przynajmniej jeden {{field}}',
   more_details: 'Więcej szczegółów',
   username_pattern_error:
-    'Nazwa użytkownika powinna zawierać tylko litery, cyfry lub znak podkreślenia i nie powinna zaczynać się od cyfry.',
+    'Nazwa użytkownika może zawierać wyłącznie litery, cyfry lub znak podkreślenia.',
   email_pattern_error: 'Adres e-mail jest nieprawidłowy.',
   phone_pattern_error: 'Numer telefonu jest nieprawidłowy.',
   insecure_contexts: 'Nieobsługiwane są niebezpieczne konteksty (non-HTTPS).',

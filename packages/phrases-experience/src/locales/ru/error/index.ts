@@ -9,6 +9,7 @@ const error = {
   password_required: 'Введите пароль',
   username_exists: 'Имя пользователя занято',
   username_should_not_start_with_number: 'Имя пользователя не должно начинаться с цифры',
+  username_should_not_start_with_tg_prefix: 'Имя пользователя не должно начинаться с tg_.',
   username_invalid_charset:
     'Имя пользователя должно содержать только буквы, цифры или символы подчеркивания',
   invalid_email: 'Электронная почта указана неправильно',

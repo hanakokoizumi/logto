@@ -10,6 +10,7 @@ const error = {
   password_required: 'パスワードが必要です',
   username_exists: 'ユーザー名が既に存在しています',
   username_should_not_start_with_number: 'ユーザー名は数字で始めることはできません',
+  username_should_not_start_with_tg_prefix: 'ユーザー名は tg_ で始めることはできません。',
   username_invalid_charset:
     'ユーザー名は文字、数字、またはアンダースコアのみを含める必要があります。',
   invalid_email: 'メールアドレスが無効です',

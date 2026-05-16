@@ -3,7 +3,8 @@ export const emailRegEx = /^\S+@\S+\.\S+$/;
 export const emailOrEmailDomainRegEx = /^\S+@\S+\.\S+|^@\S+\.\S+$/;
 export const phoneRegEx = /^\d+$/;
 export const phoneInputRegEx = /^\+?[\d-( )]+$/;
-export const usernameRegEx = /^\w+$/;
+/** Usernames are word characters and must not use the reserved `tg_` prefix (case-insensitive). */
+export const usernameRegEx = /^(?!tg_)\w+$/i;
 export const webRedirectUriProtocolRegEx = /^https?:$/;
 export const mobileUriSchemeProtocolRegEx = /^(?!http(s)?:)[a-z][\d+_a-z-]*(\.[\d+_a-z-]+)*:$/;
 export const hexColorRegEx = /^#[\da-f]{3}([\da-f]{3})?$/i;
