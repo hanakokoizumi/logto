@@ -1,4 +1,4 @@
-import { getManagementApiResourceIndicator } from '@logto/schemas';
+import { defaultTenantId, getManagementApiResourceIndicator } from '@logto/schemas';
 import Koa from 'koa';
 import Router from 'koa-router';
 
@@ -29,6 +29,7 @@ import applicationRoutes from './applications/application.js';
 import authnRoutes from './authn.js';
 import captchaProviderRoutes from './captcha-provider/index.js';
 import connectorRoutes from './connector/index.js';
+import consoleOperatorsRoutes from './console-operators/index.js';
 import customPhraseRoutes from './custom-phrase.js';
 import customProfileFieldsRoutes from './custom-profile-fields.js';
 import dashboardRoutes from './dashboard.js';
@@ -96,6 +97,9 @@ const createRouters = (tenant: TenantContext) => {
   resourceScopeRoutes(managementRouter, tenant);
   signInExperiencesRoutes(managementRouter, tenant);
   adminUserRoutes(managementRouter, tenant);
+  if (!EnvSet.values.isCloud && tenant.id === defaultTenantId) {
+    consoleOperatorsRoutes(managementRouter, tenant);
+  }
   logRoutes(managementRouter, tenant);
   roleRoutes(managementRouter, tenant);
   roleScopeRoutes(managementRouter, tenant);

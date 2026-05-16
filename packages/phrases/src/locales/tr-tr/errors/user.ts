@@ -11,6 +11,7 @@ const user = {
   identity_already_in_use: 'Sosyal platform hesabı kaydedildi.',
   social_account_exists_in_profile: 'Bu sosyal hesap zaten ilişkilendirilmiş.',
   cannot_delete_self: 'Kendinizi silemezsiniz.',
+  console_operator_last_one: 'At least one console operator must remain.',
   sign_up_method_not_enabled: 'Bu kayıt yöntemi etkin değil.',
   sign_in_method_not_enabled: 'Bu oturum açma yöntemi etkin değil.',
   same_password: 'Yeni şifre, eski şifrenizle aynı olamaz.',

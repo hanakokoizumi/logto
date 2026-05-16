@@ -11,6 +11,7 @@ const user = {
   identity_already_in_use: 'このソーシャルアカウントはすでに別のアカウントに関連付けされています。',
   social_account_exists_in_profile: 'このソーシャルアカウントはすでに関連付けられています。',
   cannot_delete_self: '自分自身を削除することはできません。',
+  console_operator_last_one: 'At least one console operator must remain.',
   sign_up_method_not_enabled: 'このサインアップ方法は有効化されていません。',
   sign_in_method_not_enabled: 'このサインイン方法は有効化されていません。',
   same_password: '新しいパスワードは、古いパスワードと同じであってはなりません。',

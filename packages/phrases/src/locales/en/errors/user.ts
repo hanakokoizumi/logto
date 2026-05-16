@@ -11,6 +11,7 @@ const user = {
   identity_already_in_use: 'The social account has been associated with an existing account.',
   social_account_exists_in_profile: 'You have already associated this social account.',
   cannot_delete_self: 'You cannot delete yourself.',
+  console_operator_last_one: 'At least one console operator must remain.',
   sign_up_method_not_enabled: 'This sign-up method is not enabled.',
   sign_in_method_not_enabled: 'This sign-in method is not enabled.',
   same_password: 'New password cannot be the same as your old password.',

@@ -11,6 +11,7 @@ const user = {
   identity_already_in_use: 'บัญชีโซเชียลนี้ถูกเชื่อมโยงกับบัญชีที่มีอยู่แล้ว',
   social_account_exists_in_profile: 'คุณได้เชื่อมโยงบัญชีโซเชียลนี้แล้ว',
   cannot_delete_self: 'คุณไม่สามารถลบบัญชีของตัวเองได้',
+  console_operator_last_one: 'At least one console operator must remain.',
   sign_up_method_not_enabled: 'ยังไม่ได้เปิดใช้งานวิธีสมัครนี้',
   sign_in_method_not_enabled: 'ยังไม่ได้เปิดใช้งานวิธีเข้าสู่ระบบนี้',
   same_password: 'รหัสผ่านใหม่ต้องไม่เหมือนกับรหัสผ่านเก่า',

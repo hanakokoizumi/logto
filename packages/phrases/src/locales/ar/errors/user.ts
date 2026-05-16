@@ -11,6 +11,7 @@ const user = {
   identity_already_in_use: 'تم ربط الحساب الاجتماعي بحساب موجود بالفعل.',
   social_account_exists_in_profile: 'لقد قمت بربط هذا الحساب الاجتماعي بالفعل.',
   cannot_delete_self: 'لا يمكنك حذف نفسك.',
+  console_operator_last_one: 'At least one console operator must remain.',
   sign_up_method_not_enabled: 'طريقة التسجيل هذه غير ممكّنة.',
   sign_in_method_not_enabled: 'طريقة تسجيل الدخول هذه غير ممكّنة.',
   same_password: 'لا يمكن أن تكون كلمة المرور الجديدة هي نفس كلمة المرور القديمة.',

@@ -12,6 +12,7 @@ const user = {
     'Учетная запись в социальной сети связана с существующей учетной записью.',
   social_account_exists_in_profile: 'Вы уже связали эту учетную запись с социальной сетью.',
   cannot_delete_self: 'Вы не можете удалить свою собственную учетную запись.',
+  console_operator_last_one: 'At least one console operator must remain.',
   sign_up_method_not_enabled: 'Этот метод регистрации не включен.',
   sign_in_method_not_enabled: 'Этот метод входа не включен.',
   same_password: 'Новый пароль не может совпадать со старым паролем.',

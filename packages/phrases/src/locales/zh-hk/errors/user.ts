@@ -11,6 +11,7 @@ const user = {
   identity_already_in_use: '該社交帳號已被註冊。',
   social_account_exists_in_profile: '你已綁定當前社交帳號，無需重複操作。',
   cannot_delete_self: '無法刪除自己的帳戶。',
+  console_operator_last_one: '至少需要保留一名控制台操作員。',
   sign_up_method_not_enabled: '註冊方式尚未啟用。',
   sign_in_method_not_enabled: '登錄方式尚未啟用。',
   same_password: '為確保帳戶安全，新密碼不能與舊密碼一致。',

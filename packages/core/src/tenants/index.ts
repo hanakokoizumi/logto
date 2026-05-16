@@ -6,6 +6,7 @@ import { redisCache } from '#src/caches/index.js';
 import { EnvSet } from '#src/env-set/index.js';
 
 import Tenant from './Tenant.js';
+import { defineTenantPoolGetForRoutes } from './tenant-pool-for-routes.js';
 
 const consoleLog = new ConsoleLog(chalk.magenta('tenant'));
 
@@ -50,5 +51,9 @@ class TenantPool {
 }
 
 export const tenantPool = new TenantPool();
+
+defineTenantPoolGetForRoutes(async (tenantId, customDomain) =>
+  tenantPool.get(tenantId, customDomain)
+);
 
 export * from './utils.js';

@@ -11,6 +11,7 @@ const user = {
   identity_already_in_use: '소셜 계정이 이미 등록되어 있어요.',
   social_account_exists_in_profile: '이 소셜 계정은 이미 연동되어 있습니다.',
   cannot_delete_self: '자기 자신을 삭제할 수 없어요.',
+  console_operator_last_one: 'At least one console operator must remain.',
   sign_up_method_not_enabled: '이 회원가입 방법은 활성화되어있지 않아요.',
   sign_in_method_not_enabled: '이 로그인 방법은 활성화되어있지 않아요.',
   same_password: '새로운 비밀번호는 이전 비밀번호와 같으면 안 돼요.',

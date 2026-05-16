@@ -14,6 +14,26 @@ const tenants = {
     card_title: '透過 Logto Cloud 更安全地管理租戶',
     card_description: '無需共用單一管理員帳號，也能為你的租戶新增管理員或協作者。',
     card_action: '探索 Logto Cloud',
+    console_operators: {
+      description:
+        'Console operators can sign in to this Logto Console with their own credentials and manage the default tenant via the Management API (same access as the first administrator).',
+      create_button: 'Add console operator',
+      table_user: 'User',
+      table_roles: 'Roles',
+      empty: 'No console operators yet.',
+      modal_title: 'Add console operator',
+      field_primary_email: 'Primary email',
+      field_password: 'Password',
+      field_username: 'Username (optional)',
+      field_name: 'Display name (optional)',
+      create_submit: 'Create',
+      delete_action: 'Remove',
+      delete_title: 'Remove console operator',
+      delete_description:
+        'This user will be removed from the admin tenant and will no longer be able to sign in to the Logto Console.',
+      created_success: 'Console operator created.',
+      deleted_success: 'Console operator removed.',
+    },
   },
   settings: {
     title: '設定',

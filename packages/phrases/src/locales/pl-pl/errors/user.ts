@@ -12,6 +12,7 @@ const user = {
   social_account_exists_in_profile:
     'To konto społecznościowe zostało już powiązane z Twoim profilem.',
   cannot_delete_self: 'Nie możesz usunąć swojego konta.',
+  console_operator_last_one: 'At least one console operator must remain.',
   sign_up_method_not_enabled: 'Rejestracja tym sposobem jest wyłączona.',
   sign_in_method_not_enabled: 'Logowanie tym sposobem jest wyłączone.',
   same_password: 'Nowe hasło nie może być takie samo jak stare hasło.',

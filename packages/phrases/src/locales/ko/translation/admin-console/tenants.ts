@@ -15,6 +15,26 @@ const tenants = {
     card_description:
       '하나의 관리자 계정을 공유하지 않고도 테넌트에 관리자나 협업자를 추가할 수 있습니다.',
     card_action: 'Logto Cloud 살펴보기',
+    console_operators: {
+      description:
+        'Console operators can sign in to this Logto Console with their own credentials and manage the default tenant via the Management API (same access as the first administrator).',
+      create_button: 'Add console operator',
+      table_user: 'User',
+      table_roles: 'Roles',
+      empty: 'No console operators yet.',
+      modal_title: 'Add console operator',
+      field_primary_email: 'Primary email',
+      field_password: 'Password',
+      field_username: 'Username (optional)',
+      field_name: 'Display name (optional)',
+      create_submit: 'Create',
+      delete_action: 'Remove',
+      delete_title: 'Remove console operator',
+      delete_description:
+        'This user will be removed from the admin tenant and will no longer be able to sign in to the Logto Console.',
+      created_success: 'Console operator created.',
+      deleted_success: 'Console operator removed.',
+    },
   },
   settings: {
     title: '설정',

@@ -11,6 +11,7 @@ const user = {
   identity_already_in_use: 'A conta social foi registada.',
   social_account_exists_in_profile: 'A conta social já foi associada a este perfil.',
   cannot_delete_self: 'Não se pode remover a si mesmo.',
+  console_operator_last_one: 'At least one console operator must remain.',
   sign_up_method_not_enabled: 'Este método de registo não está ativo.',
   sign_in_method_not_enabled: 'Este método de início de sessão não está ativo.',
   same_password: 'A nova palavra-passe não pode ser igual à antiga.',
