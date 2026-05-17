@@ -9,6 +9,7 @@ import {
   defaultTenantResponse,
   defaultSubscriptionQuota,
   defaultSubscriptionUsage,
+  ossSubscriptionQuotaFallback,
 } from '@/consts';
 import { isCloud } from '@/consts/env';
 import { TenantsContext } from '@/contexts/TenantsProvider';
@@ -79,8 +80,12 @@ const useSubscriptionData: () => SubscriptionContext & { isLoading: boolean } = 
       currentSubscription: currentSubscription ?? defaultTenantResponse.subscription,
       onCurrentSubscriptionUpdated: mutateSubscription,
       mutateSubscriptionQuotaAndUsages,
-      currentSubscriptionQuota: subscriptionUsageData?.quota ?? defaultSubscriptionQuota,
-      currentSubscriptionBasicQuota: subscriptionUsageData?.basicQuota ?? defaultSubscriptionQuota,
+      currentSubscriptionQuota:
+        subscriptionUsageData?.quota ??
+        (isCloud ? defaultSubscriptionQuota : ossSubscriptionQuotaFallback),
+      currentSubscriptionBasicQuota:
+        subscriptionUsageData?.basicQuota ??
+        (isCloud ? defaultSubscriptionQuota : ossSubscriptionQuotaFallback),
       currentSubscriptionUsage: subscriptionUsageData?.usage ?? defaultSubscriptionUsage,
       currentSubscriptionResourceScopeUsage: subscriptionUsageData?.resources ?? {},
       currentSubscriptionRoleScopeUsage: subscriptionUsageData?.roles ?? {},

@@ -124,6 +124,15 @@ export const defaultSubscriptionQuota: SubscriptionQuota = {
   customDomainsLimit: 1,
 };
 
+/**
+ * OSS has no subscription-usage API; use development-plan style limits so features like
+ * Bring your UI stay enabled in the console.
+ */
+export const ossSubscriptionQuotaFallback: SubscriptionQuota = {
+  ...defaultSubscriptionQuota,
+  ...defaultLogtoSku.quota,
+};
+
 export const defaultSubscriptionUsage: SubscriptionCountBasedUsage = {
   applicationsLimit: 0,
   machineToMachineLimit: 0,
