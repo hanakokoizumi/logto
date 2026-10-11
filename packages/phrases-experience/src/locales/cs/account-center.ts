@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Locale catalog mirrors the complete Account Center phrase schema. */
 const account_center = {
   home: {
     title: 'Stránka nenalezena',
@@ -7,15 +8,14 @@ const account_center = {
     title: 'Účet',
     security_title: 'Zabezpečení',
     security_description: 'Zde můžeš změnit nastavení svého účtu a zajistit tak jeho bezpečnost.',
-    /** UNTRANSLATED */
-    profile_title: 'Personal info',
-    /** UNTRANSLATED */
-    profile_description: 'Change your personal information here.',
-    /** UNTRANSLATED */
-    sidebar_personal_info: 'Personal info',
-    /** UNTRANSLATED */
-    sidebar_security: 'Security',
+    profile_title: 'Osobní informace',
+    profile_description: 'Zde změňte své osobní údaje.',
+    sidebar_personal_info: 'Osobní informace',
+    sidebar_security: 'Zabezpečení',
+    sidebar_sessions: 'Relace',
     support: 'Podpora',
+    user_menu: 'Uživatelská nabídka',
+    sign_out: 'Odhlásit se',
   },
   verification: {
     title: 'Ověření bezpečnosti',
@@ -68,6 +68,7 @@ const account_center = {
   username: {
     title: 'Nastavit uživatelské jméno',
     description: 'Uživatelské jméno může obsahovat pouze písmena, čísla a podtržítka.',
+    policy_description: '{{requirements}}',
     success: 'Uživatelské jméno bylo úspěšně změněno.',
   },
   security: {
@@ -95,7 +96,6 @@ const account_center = {
     backup_codes_count_other: 'zbývá {{count}} kódů',
     view: 'Zobrazit',
     manage: 'Spravovat',
-    turn_on_2_step_verification: 'Zapnout dvoufázové ověření',
     turn_on_2_step_verification_description:
       'Přidejte další vrstvu zabezpečení. Při přihlášení budete vyzváni k druhému ověřovacímu kroku.',
     turn_off_2_step_verification: 'Vypnout dvoufázové ověření',
@@ -104,6 +104,9 @@ const account_center = {
     disable_2_step_verification: 'Vypnout',
     no_verification_method_warning:
       'Nepřidali jste druhou ověřovací metodu. Přidejte alespoň jednu pro povolení dvoufázového ověření při přihlášení.',
+    passkey_sign_in_prompt: 'Vyzvat k nastavení přístupového klíče',
+    passkey_sign_in_prompt_description:
+      'Když je zapnuto, budete vyzváni k nastavení přístupového klíče pro rychlejší a bezpečnější přihlášení.',
     account_removal: 'Smazání účtu',
     delete_your_account: 'Smazat svůj účet',
     delete_account: 'Smazat účet',
@@ -119,6 +122,21 @@ const account_center = {
     email_removed: 'E-mailová adresa byla úspěšně odstraněna.',
     phone_removed: 'Telefonní číslo bylo úspěšně odstraněno.',
     username_removed: 'Uživatelské jméno bylo úspěšně odstraněno.',
+    trusted_devices: {
+      title: 'Důvěryhodná zařízení MFA',
+      current_device: 'Aktuální zařízení',
+      expires_on: 'Platnost vyprší {{date}}',
+      unknown_location: 'Neznámá poloha',
+      remove: 'Odebrat',
+      removed: 'Důvěryhodné zařízení bylo úspěšně odebráno.',
+      loading: 'Načítání...',
+      empty: 'Žádná důvěryhodná zařízení.',
+      load_failed: 'Důvěryhodná zařízení se nepodařilo načíst. Zkuste to prosím znovu.',
+      retry: 'Zkusit znovu',
+      remove_confirmation_title: 'Odebrat důvěryhodné zařízení?',
+      remove_confirmation_description:
+        'Při příštím přihlášení na tomto zařízení budete muset znovu dokončit MFA. Vaše aktuální relace zůstane aktivní.',
+    },
   },
   social: {
     linked: '{{connector}} byl úspěšně propojen.',
@@ -255,6 +273,32 @@ const account_center = {
       'Úspěšně jsi ověřil/a toto zařízení pro dvoufázové ověření. Přizpůsob název, abys mohl/a rozpoznat více klíčů.',
     name_input_label: 'Název',
   },
+  sessions: {
+    page_title: 'Relace',
+    page_description: 'Spravujte své aktivní relace a autorizované aplikace třetích stran.',
+    title: 'Relace',
+    current_session: 'Aktuální relace',
+    signed_in_at: 'Přihlášeno {{date}}',
+    revoke_session: 'Odhlásit',
+    revoke_session_title: 'Odhlásit relaci',
+    revoke_session_description:
+      'Tímto se relace odhlásí a zruší veškerý přidružený přístup. Opravdu chcete pokračovat?',
+    no_other_sessions: 'Žádné další aktivní relace.',
+    loading: 'Načítání...',
+    third_party_apps_title: 'Aplikace třetích stran',
+    no_third_party_apps: 'Žádné autorizované aplikace třetích stran.',
+    third_party_apps_load_failed:
+      'Nepodařilo se načíst aplikace třetích stran. Zkuste to prosím znovu.',
+    granted_at: 'Autorizováno {{date}}',
+    dynamic_app: 'Dynamická aplikace',
+    client_id: 'ID klienta: {{clientId}}',
+    revoke_grant: 'Odebrat',
+    revoke_grant_title: 'Odebrat přístup aplikace třetí strany',
+    revoke_grant_description:
+      'Tímto se zruší přístup udělený této aplikaci. Dříve vydané přístupové tokeny mohou zůstat platné až do svého vypršení. Opravdu chcete pokračovat?',
+    revoke_grant_failed: 'Nepodařilo se zrušit některá oprávnění. Zkuste to prosím znovu.',
+  },
 };
 
 export default Object.freeze(account_center);
+/* eslint-enable max-lines */

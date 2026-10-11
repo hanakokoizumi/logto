@@ -39,6 +39,14 @@ const sign_in_experiences = {
     'Itens de lista de bloqueio personalizados de email inválidos: {{items, list(type:conjunction)}}. Cada item deve ser um endereço de email válido ou domínio de email, por exemplo, foo@example.com ou @example.com.',
   forgot_password_method_requires_connector:
     'O método de esquecimento de senha requer um conector {{method}} correspondente para ser configurado.',
+  password_expiration_requires_forgot_password:
+    'A expiração de senha requer ao menos um método de recuperação de senha com um conector válido.',
+  password_expiration_not_enabled:
+    'A política de expiração de senha não está ativada. Ative-a nas configurações de experiência de login antes de expirar senhas.',
+  password_expiration_invalid_period_days:
+    'Os dias do período de validade devem ser um número inteiro positivo quando a expiração de senha estiver habilitada.',
+  username_policy_case_conflicts_exist:
+    'Não é possível mudar para nomes de usuário sem diferenciação de maiúsculas/minúsculas enquanto existirem nomes de usuário que diferem apenas por caso. Resolva os conflitos e tente novamente.',
 };
 
 export default Object.freeze(sign_in_experiences);

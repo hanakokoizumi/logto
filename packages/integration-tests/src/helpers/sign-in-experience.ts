@@ -265,3 +265,22 @@ export const disableCaptcha = async () =>
       enabled: false,
     },
   });
+
+export const enablePasswordExpiration = async ({
+  validPeriodDays = 30,
+}: {
+  validPeriodDays?: number;
+}) =>
+  updateSignInExperience({
+    passwordExpiration: {
+      enabled: true,
+      validPeriodDays,
+    },
+  });
+
+export const disablePasswordExpiration = async () =>
+  updateSignInExperience({
+    passwordExpiration: {
+      enabled: false,
+    },
+  });

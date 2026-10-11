@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Locale catalog mirrors the complete Account Center phrase schema. */
 const account_center = {
   home: {
     title: 'Nie znaleziono strony',
@@ -8,15 +9,14 @@ const account_center = {
     security_title: 'Bezpieczeństwo',
     security_description:
       'Tutaj możesz zmienić ustawienia konta, aby zadbać o jego bezpieczeństwo.',
-    /** UNTRANSLATED */
-    profile_title: 'Personal info',
-    /** UNTRANSLATED */
-    profile_description: 'Change your personal information here.',
-    /** UNTRANSLATED */
-    sidebar_personal_info: 'Personal info',
-    /** UNTRANSLATED */
-    sidebar_security: 'Security',
+    profile_title: 'Informacje osobiste',
+    profile_description: 'Zmień swoje dane osobowe tutaj.',
+    sidebar_personal_info: 'Informacje osobiste',
+    sidebar_security: 'Bezpieczeństwo',
+    sidebar_sessions: 'Sesje',
     support: 'Pomoc',
+    user_menu: 'Menu użytkownika',
+    sign_out: 'Wyloguj się',
   },
   verification: {
     title: 'Weryfikacja bezpieczeństwa',
@@ -69,6 +69,7 @@ const account_center = {
   username: {
     title: 'Ustaw nazwę użytkownika',
     description: 'Nazwa użytkownika może zawierać tylko litery, cyfry i podkreślenia.',
+    policy_description: '{{requirements}}',
     success: 'Nazwa użytkownika została pomyślnie zaktualizowana.',
   },
   security: {
@@ -96,7 +97,6 @@ const account_center = {
     backup_codes_count_other: '{{count}} kody pozostałe',
     view: 'Wyświetl',
     manage: 'Zarządzaj',
-    turn_on_2_step_verification: 'Włącz weryfikację dwuetapową',
     turn_on_2_step_verification_description:
       'Dodaj dodatkową warstwę bezpieczeństwa. Podczas logowania zostaniesz poproszony o drugi krok weryfikacji.',
     turn_off_2_step_verification: 'Wyłącz weryfikację dwuetapową',
@@ -105,6 +105,9 @@ const account_center = {
     disable_2_step_verification: 'Wyłącz',
     no_verification_method_warning:
       'Nie dodałeś drugiej metody weryfikacji. Dodaj co najmniej jedną, aby włączyć weryfikację dwuetapową podczas logowania.',
+    passkey_sign_in_prompt: 'Monituj o skonfigurowanie passkey',
+    passkey_sign_in_prompt_description:
+      'Gdy włączone, zostaniesz poproszony o skonfigurowanie passkey w celu szybszego i bezpieczniejszego logowania.',
     account_removal: 'Usunięcie konta',
     delete_your_account: 'Usuń swoje konto',
     delete_account: 'Usuń konto',
@@ -120,6 +123,21 @@ const account_center = {
     email_removed: 'Adres e-mail został pomyślnie usunięty.',
     phone_removed: 'Numer telefonu został pomyślnie usunięty.',
     username_removed: 'Nazwa użytkownika została pomyślnie usunięta.',
+    trusted_devices: {
+      title: 'Zaufane urządzenia MFA',
+      current_device: 'Bieżące urządzenie',
+      expires_on: 'Wygasa {{date}}',
+      unknown_location: 'Nieznana lokalizacja',
+      remove: 'Usuń',
+      removed: 'Zaufane urządzenie zostało usunięte.',
+      loading: 'Ładowanie...',
+      empty: 'Brak zaufanych urządzeń.',
+      load_failed: 'Nie udało się załadować zaufanych urządzeń. Spróbuj ponownie.',
+      retry: 'Spróbuj ponownie',
+      remove_confirmation_title: 'Usunąć zaufane urządzenie?',
+      remove_confirmation_description:
+        'Przy następnym logowaniu na tym urządzeniu konieczne będzie ponowne wykonanie MFA. Bieżąca sesja pozostanie aktywna.',
+    },
   },
   social: {
     linked: '{{connector}} połączono pomyślnie.',
@@ -257,6 +275,33 @@ const account_center = {
       'Pomyślnie zweryfikowano to urządzenie do uwierzytelniania dwuetapowego. Dostosuj nazwę, aby rozpoznać go, jeśli masz wiele kluczy.',
     name_input_label: 'Nazwa',
   },
+  sessions: {
+    page_title: 'Sesje',
+    page_description:
+      'Zarządzaj swoimi aktywnymi sesjami i autoryzowanymi aplikacjami firm trzecich.',
+    title: 'Sesje',
+    current_session: 'Bieżąca sesja',
+    signed_in_at: 'Zalogowano {{date}}',
+    revoke_session: 'Wyloguj',
+    revoke_session_title: 'Wyloguj sesję',
+    revoke_session_description:
+      'Spowoduje to wylogowanie sesji i cofnięcie wszystkich powiązanych uprawnień. Czy na pewno chcesz kontynuować?',
+    no_other_sessions: 'Brak innych aktywnych sesji.',
+    loading: 'Ładowanie...',
+    third_party_apps_title: 'Aplikacje firm trzecich',
+    no_third_party_apps: 'Brak autoryzowanych aplikacji firm trzecich.',
+    third_party_apps_load_failed:
+      'Nie udało się załadować aplikacji firm trzecich. Spróbuj ponownie.',
+    granted_at: 'Autoryzowano {{date}}',
+    dynamic_app: 'Aplikacja dynamiczna',
+    client_id: 'ID klienta: {{clientId}}',
+    revoke_grant: 'Usuń',
+    revoke_grant_title: 'Usuń dostęp aplikacji firmy trzeciej',
+    revoke_grant_description:
+      'Spowoduje to cofnięcie uprawnień przyznanych tej aplikacji. Wcześniej wydane tokeny dostępu mogą pozostać ważne do czasu ich wygaśnięcia. Czy na pewno chcesz kontynuować?',
+    revoke_grant_failed: 'Nie udało się cofnąć niektórych uprawnień. Spróbuj ponownie.',
+  },
 };
 
 export default Object.freeze(account_center);
+/* eslint-enable max-lines */

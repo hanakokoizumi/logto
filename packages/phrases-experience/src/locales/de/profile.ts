@@ -26,6 +26,25 @@ const profile = {
     male: 'Männlich',
     prefer_not_to_say: 'Keine Angabe',
   },
+  checkbox_value: {
+    checked: 'Ja',
+    unchecked: 'Nein',
+  },
+  avatar_upload: {
+    upload: 'Hochladen',
+    remove: 'Entfernen',
+    uploading: 'Wird hochgeladen...',
+    hint: 'Empfohlene Größe 1:1, maximal {{limit}}.',
+    error_file_type: 'Dateityp muss {{extensions}} sein.',
+    error_file_size: 'Die Dateigröße darf {{limit}} nicht überschreiten.',
+    error_storage_not_configured:
+      'Foto konnte nicht hochgeladen werden. Bitte versuchen Sie es später erneut.',
+    error_upload: 'Foto konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.',
+    error_save: 'Ihr Foto konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.',
+    crop_title: 'Foto zuschneiden',
+    zoom: 'Zoom',
+    error_crop: 'Bild konnte nicht zugeschnitten werden. Bitte versuchen Sie es erneut.',
+  },
 };
 
 export default Object.freeze(profile);

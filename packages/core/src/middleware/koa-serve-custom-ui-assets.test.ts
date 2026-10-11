@@ -3,6 +3,7 @@ import { Readable } from 'node:stream';
 import { StorageProvider } from '@logto/schemas';
 import { createMockUtils, pickDefault } from '@logto/shared/esm';
 
+import { EnvSet } from '#src/env-set/index.js';
 import RequestError from '#src/errors/RequestError/index.js';
 import SystemContext from '#src/tenants/SystemContext.js';
 import createMockContext from '#src/test-utils/jest-koa-mocks/create-mock-context.js';
@@ -36,14 +37,39 @@ await mockEsmWithActual('#src/utils/storage/azure-storage.js', () => ({
   })),
 }));
 
+const mockedS3DownloadFile = jest.fn();
+
+await mockEsmWithActual('#src/utils/storage/s3-storage.js', () => ({
+  buildS3Storage: jest.fn(() => ({
+    uploadFile: jest.fn(),
+    downloadFile: mockedS3DownloadFile,
+    isFileExisted: jest.fn(async () => true),
+    getFileProperties: jest.fn(),
+  })),
+}));
+
 await mockEsmWithActual('#src/utils/tenant.js', () => ({
   getTenantId: jest.fn().mockResolvedValue(['default']),
 }));
 
 const koaServeCustomUiAssets = await pickDefault(import('./koa-serve-custom-ui-assets.js'));
 
+class TransientStorageError extends Error {
+  code = 'ERR_STREAM_PREMATURE_CLOSE';
+  errno = 'ERR_STREAM_PREMATURE_CLOSE';
+}
+
 describe('koaServeCustomUiAssets middleware', () => {
   const next = jest.fn();
+
+  beforeEach(() => {
+    mockedIsFileExisted.mockReset();
+    mockedIsFileExisted.mockResolvedValue(true);
+    mockedDownloadFile.mockReset();
+    mockedGetFileProperties.mockReset();
+    mockedGetFileProperties.mockResolvedValue({ contentLength: 100 });
+    next.mockClear();
+  });
 
   it('should serve the file directly if the request path contains a dot', async () => {
     const mockBodyStream = Readable.from('javascript content');
@@ -62,6 +88,7 @@ describe('koaServeCustomUiAssets middleware', () => {
 
     expect(ctx.type).toEqual('text/javascript');
     expect(ctx.body).toEqual(mockBodyStream);
+    expect(mockedGetFileProperties).not.toHaveBeenCalled();
   });
 
   it('should serve the index.html', async () => {
@@ -80,6 +107,7 @@ describe('koaServeCustomUiAssets middleware', () => {
 
     expect(ctx.type).toEqual('text/html');
     expect(ctx.body).toEqual(mockBodyStream);
+    expect(mockedGetFileProperties).not.toHaveBeenCalled();
   });
 
   it('should return 404 if the file does not exist', async () => {
@@ -88,6 +116,43 @@ describe('koaServeCustomUiAssets middleware', () => {
 
     await expect(koaServeCustomUiAssets('custom-ui-asset-id')(ctx, next)).rejects.toMatchError(
       new RequestError({ code: 'entity.not_found', status: 404 })
+    );
+  });
+
+  it('should return 502 if the blob existence check hits a transient storage error', async () => {
+    mockedIsFileExisted.mockRejectedValueOnce(new TransientStorageError('Premature close'));
+    const ctx = createMockContext({ url: '/fake.txt' });
+
+    await expect(koaServeCustomUiAssets('custom-ui-asset-id')(ctx, next)).rejects.toMatchError(
+      new RequestError(
+        { code: 'storage.download_error', status: 502 },
+        { details: 'Premature close' }
+      )
+    );
+  });
+
+  it('should return 502 if downloading the blob hits a transient storage error', async () => {
+    mockedDownloadFile.mockRejectedValueOnce(new TransientStorageError('Premature close'));
+    const ctx = createMockContext({ url: '/fake.txt' });
+
+    await expect(koaServeCustomUiAssets('custom-ui-asset-id')(ctx, next)).rejects.toMatchError(
+      new RequestError(
+        { code: 'storage.download_error', status: 502 },
+        { details: 'Premature close' }
+      )
+    );
+  });
+
+  it('should return 502 if reading blob properties hits a transient storage error', async () => {
+    mockedDownloadFile.mockResolvedValueOnce({ readableStreamBody: Readable.from('content') });
+    mockedGetFileProperties.mockRejectedValueOnce(new TransientStorageError('Premature close'));
+    const ctx = createMockContext({ url: '/fake.txt', headers: { range: 'bytes=0-10' } });
+
+    await expect(koaServeCustomUiAssets('custom-ui-asset-id')(ctx, next)).rejects.toMatchError(
+      new RequestError(
+        { code: 'storage.download_error', status: 502 },
+        { details: 'Premature close' }
+      )
     );
   });
 
@@ -111,6 +176,7 @@ describe('koaServeCustomUiAssets middleware', () => {
     await koaServeCustomUiAssets('custom-ui-asset-id')(ctx, next);
 
     expect(mockedDownloadFile).toHaveBeenCalledWith('default/custom-ui-asset-id/video.mp4', 0, 11);
+    expect(mockedGetFileProperties).toHaveBeenCalledWith('default/custom-ui-asset-id/video.mp4');
     expect(ctx.type).toEqual('video/mp4');
     expect(ctx.body).toEqual(mockBodyStream);
     expect(ctx.status).toEqual(206);
@@ -125,5 +191,57 @@ describe('koaServeCustomUiAssets middleware', () => {
     await expect(koaServeCustomUiAssets('custom-ui-asset-id')(ctx, next)).rejects.toMatchError(
       new RequestError({ code: 'request.range_not_satisfiable', status: 416 })
     );
+  });
+
+  describe('with an S3-compatible storage', () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @silverhand/fp/no-mutation
+      SystemContext.shared.experienceBlobsProviderConfig = {
+        provider: StorageProvider.S3Storage,
+        endpoint: 'http://localhost:9000',
+        bucket: 'bucket',
+        accessKeyId: 'accessKeyId',
+        accessSecretKey: 'accessSecretKey',
+      };
+    });
+
+    afterEach(() => {
+      // eslint-disable-next-line @silverhand/fp/no-mutation
+      SystemContext.shared.experienceBlobsProviderConfig = experienceBlobsProviderConfig;
+    });
+
+    it('should serve the file from the configured storage', async () => {
+      const mockBodyStream = Readable.from('<html></html>');
+      mockedS3DownloadFile.mockResolvedValueOnce({
+        contentType: 'text/html',
+        contentLength: 13,
+        readableStreamBody: mockBodyStream,
+      });
+      const ctx = createMockContext({ url: '/sign-in' });
+
+      await koaServeCustomUiAssets('custom-ui-asset-id')(ctx, next);
+
+      expect(mockedS3DownloadFile).toHaveBeenCalledWith(
+        'default/custom-ui-asset-id/index.html',
+        undefined,
+        undefined
+      );
+      expect(mockedDownloadFile).not.toHaveBeenCalled();
+      expect(ctx.type).toEqual('text/html');
+      expect(ctx.body).toEqual(mockBodyStream);
+    });
+
+    it('should only serve from Azure storage without dev features', async () => {
+      const { isDevFeaturesEnabled } = EnvSet.values;
+      Reflect.set(EnvSet.values, 'isDevFeaturesEnabled', false);
+
+      try {
+        expect(() => koaServeCustomUiAssets('custom-ui-asset-id')).toThrowError(
+          new RequestError({ code: 'storage.not_configured', status: 400 })
+        );
+      } finally {
+        Reflect.set(EnvSet.values, 'isDevFeaturesEnabled', isDevFeaturesEnabled);
+      }
+    });
   });
 });

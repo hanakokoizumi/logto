@@ -11,6 +11,12 @@ const error = {
   username_should_not_start_with_number: 'ชื่อผู้ใช้ไม่ควรขึ้นต้นด้วยตัวเลข',
   username_should_not_start_with_tg_prefix: 'ชื่อผู้ใช้ต้องไม่ขึ้นต้นด้วย tg_',
   username_invalid_charset: 'ชื่อผู้ใช้ควรมีแค่ตัวอักษร ตัวเลข หรือขีดล่างเท่านั้น',
+  username_too_short: 'ชื่อผู้ใช้ต้องมีความยาวอย่างน้อย {{min}} ตัวอักษร',
+  username_too_long: 'ชื่อผู้ใช้ต้องยาวไม่เกิน {{max}} ตัวอักษร',
+  username_uppercase_not_allowed: 'ไม่อนุญาตให้ใช้ตัวอักษรพิมพ์ใหญ่ในชื่อผู้ใช้',
+  username_lowercase_not_allowed: 'ไม่อนุญาตให้ใช้ตัวอักษรพิมพ์เล็กในชื่อผู้ใช้',
+  username_numbers_not_allowed: 'ไม่อนุญาตให้ใช้ตัวเลขในชื่อผู้ใช้',
+  username_underscore_not_allowed: 'ไม่อนุญาตให้ใช้ขีดล่างในชื่อผู้ใช้',
   invalid_email: 'อีเมลไม่ถูกต้อง',
   invalid_phone: 'หมายเลขโทรศัพท์ไม่ถูกต้อง',
   passwords_do_not_match: 'รหัสผ่านไม่ตรงกัน',
@@ -28,9 +34,17 @@ const error = {
   invalid_link: 'ลิงก์ไม่ถูกต้อง',
   invalid_link_description: 'โทเค็นใช้ครั้งเดียวของคุณอาจหมดอายุหรือไม่ถูกต้องอีกต่อไป',
   captcha_verification_failed: 'การตรวจสอบ captcha ล้มเหลว',
+  send_verification_code_failed: 'ส่งรหัสยืนยันไม่สำเร็จ โปรดลองอีกครั้งในภายหลัง',
+  send_verification_code_failed_use_password:
+    'ส่งรหัสยืนยันไม่สำเร็จ โปรดเข้าสู่ระบบด้วยรหัสผ่านแทน',
   terms_acceptance_required: 'จำเป็นต้องยอมรับเงื่อนไข',
   terms_acceptance_required_description: 'คุณต้องยอมรับเงื่อนไขเพื่อดำเนินการต่อ',
   something_went_wrong: 'เกิดข้อผิดพลาดบางอย่าง',
+  account_suspended: 'บัญชีถูกระงับ',
+  account_suspended_description: 'บัญชีนี้ถูกระงับ โปรดติดต่อผู้ดูแลระบบเพื่อขอความช่วยเหลือ',
+  access_denied: 'ปฏิเสธการเข้าถึง',
+  application_access_denied:
+    'คุณไม่มีสิทธิ์เข้าถึงแอปพลิเคชันนี้\nกรุณาติดต่อผู้ดูแลระบบเพื่อขอความช่วยเหลือ',
   feature_not_enabled: 'คุณไม่มีสิทธิ์เข้าถึงฟีเจอร์นี้ กรุณาติดต่อผู้ดูแลระบบเพื่อขอความช่วยเหลือ',
 };
 

@@ -35,6 +35,8 @@ const description = {
   reset_password: 'Parolanızı mı unuttunuz',
   reset_password_description:
     'Hesabınızla ilişkili {{types, list(type: disjunction;)}} girin, şifrenizi sıfırlamanız için size doğrulama kodunu göndereceğiz.',
+  reset_password_magic_link_description:
+    'Parolanızı sıfırlamaya devam etmek için hesabınızla ilişkili e-posta adresini girin.',
   new_password: 'Yeni Şifre',
   set_password: 'Şifreyi belirle',
   password_changed: 'Şifre değişti',
@@ -45,6 +47,8 @@ const description = {
   enter_username: 'Kullanıcı adını ayarla',
   enter_username_description:
     'Kullanıcı adı, oturum açmak için bir alternatiftir. Kullanıcı adı yalnızca harf, sayı ve alt çizgi içermelidir.',
+  enter_username_policy_description:
+    'Kullanıcı adı, oturum açmak için bir alternatiftir. {{requirements}}',
   link_email: 'E-postayı bağla',
   link_phone: 'Telefonu bağla',
   link_email_or_phone: 'E-posta veya telefon bağlantısı',
@@ -80,12 +84,25 @@ const description = {
     character_types_other:
       'en az {{count}} tane büyük harf, küçük harf, rakam ve sembol içermelidir',
   },
+  username_requirements: 'Kullanıcı adı {{items, list}}.',
+  username_requirement: {
+    length: '{{min}} ile {{max}} karakter arasında olmalıdır',
+    characters: 'yalnızca {{characters, list}} içerebilir',
+  },
+  username_character: {
+    uppercase: 'büyük harfler',
+    lowercase: 'küçük harfler',
+    number: 'rakamlar',
+    underscore: 'alt çizgiler',
+  },
   use: 'Kullan',
   single_sign_on_email_form: 'Kurumsal e-posta adresinizi girin',
   single_sign_on_connectors_list:
     'Şirketiniz, {{email}} e-posta hesabı için Tekli Oturum Açmayı (Single Sign-On) etkinleştirdi. Aşağıdaki SSO sağlayıcıları ile oturum açmaya devam edebilirsiniz.',
   single_sign_on_enabled: 'Bu hesapta Tekli Oturum Açma etkinleştirildi.',
   authorize_title: '{{name}} yetkilendir',
+  unregistered_client_notice:
+    'Bu uygulama, adı ve logosu dahil olmak üzere <hostname>{{host}}</hostname> tarafından beyan edilmiştir. Devam etmeden önce ana bilgisayar adını doğrulayın.',
   request_permission: '{{name}} erişim izni istiyor:',
   grant_organization_access: 'Organizasyon erişimi ver:',
   authorize_personal_data_usage: 'Kişisel verilerinizin kullanımını yetkilendirin:',
@@ -103,6 +120,8 @@ const description = {
   identifier_register_description:
     'Yeni bir hesap oluşturmak için {{types, list(type: disjunction;)}} girin.',
   all_account_creation_options: 'Tüm hesap oluşturma seçenekleri',
+  password_expired: 'Şifrenizin süresi doldu ve giriş yapmadan önce sıfırlanması gerekiyor.',
+  password_expiration_reset: 'Şifreyi sıfırla',
   back_to_sign_in: 'Girişe dön',
   support_email: 'Destek e-postası: <link></link>',
   support_website: 'Destek web sitesi: <link></link>',

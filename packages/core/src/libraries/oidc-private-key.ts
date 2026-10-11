@@ -1,47 +1,32 @@
+import crypto from 'node:crypto';
+
 import type { OidcPrivateKey } from '@logto/schemas';
 import {
   OidcSigningKeyStatus,
-  getCurrentOidcPrivateKey,
   getImmediatelyRotatedOidcPrivateKeys,
   getOidcPrivateKeysAfterDeletion,
+  getOidcProviderPrivateKeys,
   getRotationStateForStagedRotation,
   getStagedRotatedOidcPrivateKeys,
   normalizeOidcPrivateKeys,
 } from '@logto/schemas';
+import type { JWK } from 'jose';
 
 import RequestError from '#src/errors/RequestError/index.js';
 import { createLogtoConfigQueries } from '#src/queries/logto-config.js';
 import type Queries from '#src/tenants/Queries.js';
 import { syncSigningKeyRotationStateCache } from '#src/tenants/signing-key-rotation-state.js';
-
-export {
-  getCanonicalOidcPrivateKeys,
-  getCurrentOidcPrivateKey,
-  getImmediatelyRotatedOidcPrivateKeys,
-  getOidcPrivateKeysAfterDeletion,
-  getOidcProviderPrivateKeys,
-  getStagedRotatedOidcPrivateKeys,
-  normalizeOidcPrivateKeys,
-} from '@logto/schemas';
+import { exportJWK } from '#src/utils/jwks.js';
 
 /**
- * Promote a staged Next key into Current and demote the previous Current to Previous.
- * Returns the original normalized key set when no staged activation is pending.
+ * Export public JWKS from private signing keys in oidc-provider key order.
  */
-export const rotateOidcPrivateKeyStatuses = (privateKeys: OidcPrivateKey[]): OidcPrivateKey[] => {
-  const normalizedPrivateKeys = normalizeOidcPrivateKeys(privateKeys);
-  const nextKey = normalizedPrivateKeys.find(({ status }) => status === OidcSigningKeyStatus.Next);
+export const getOidcProviderPublicJwks = async (privateKeys: OidcPrivateKey[]): Promise<JWK[]> => {
+  const publicKeys = getOidcProviderPrivateKeys(privateKeys).map(({ value }) =>
+    crypto.createPublicKey(value)
+  );
 
-  if (!nextKey) {
-    return privateKeys.every(({ status }) => status) ? privateKeys : normalizedPrivateKeys;
-  }
-
-  const currentKey = getCurrentOidcPrivateKey(normalizedPrivateKeys);
-
-  return [
-    { ...nextKey, status: OidcSigningKeyStatus.Current },
-    { ...currentKey, status: OidcSigningKeyStatus.Previous },
-  ];
+  return Promise.all(publicKeys.map(async (key) => exportJWK(key)));
 };
 
 export class OidcPrivateKeyLibrary {

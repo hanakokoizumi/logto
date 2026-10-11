@@ -21,6 +21,14 @@ const user_details = {
     new_password: 'Nouveau mot de passe :',
     password: 'Mot de passe :',
   },
+  expire_password: {
+    button: 'Expirer',
+    title: 'Êtes-vous sûr de vouloir faire expirer ce mot de passe ?',
+    content:
+      "L'utilisateur devra réinitialiser son mot de passe lors de sa prochaine connexion. Cette action ne peut être annulée.",
+    success: "Le mot de passe de l'utilisateur a été marqué comme expiré.",
+    not_enabled_tooltip: "La politique d'expiration du mot de passe n'est pas activée.",
+  },
   tab_settings: 'Paramètres',
   tab_roles: 'Rôles utilisateur',
   tab_logs: "Journaux de l'utilisateur",
@@ -179,7 +187,7 @@ const user_details = {
     access_created_at_column: 'Accès créé le',
     revoke_access_title: "Révoquer l'accès ?",
     revoke_access_description:
-      "Cette action révoquera l'accès de l'application au compte de cet utilisateur sur tous les appareils. L'utilisateur devra la réautoriser pour rétablir l'accès.",
+      "Cette action révoquera l'accès de l'application au compte de cet utilisateur sur tous les appareils. L'utilisateur devra la réautoriser pour rétablir l'accès. Les jetons d'accès déjà émis peuvent rester valides jusqu'à leur expiration.",
   },
   connections: {
     title: 'Connexion',

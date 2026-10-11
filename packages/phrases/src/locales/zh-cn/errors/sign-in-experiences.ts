@@ -29,6 +29,12 @@ const sign_in_experiences = {
   invalid_custom_email_blocklist_format:
     '无效的自定义电子邮件黑名单项目：{{items, list(type:conjunction)}}。每个项目必须是有效的电子邮件地址或电子邮件域，例如，foo@example.com 或 @example.com。',
   forgot_password_method_requires_connector: '忘记密码方法需要配置相应的 {{method}} 连接器。',
+  password_expiration_requires_forgot_password:
+    '密码过期需要至少配置一种带有有效连接器的忘记密码方式。',
+  password_expiration_not_enabled: '密码过期策略未启用。在过期密码前，请在登录体验设置中启用它。',
+  password_expiration_invalid_period_days: '启用密码过期策略时，有效期天数必须为正整数。',
+  username_policy_case_conflicts_exist:
+    '无法在存在仅大小写不同的用户名时切换为不区分大小写的用户名。请解决这些冲突，然后重试。',
 };
 
 export default Object.freeze(sign_in_experiences);

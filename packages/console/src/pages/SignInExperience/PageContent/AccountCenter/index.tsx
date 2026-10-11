@@ -1,4 +1,4 @@
-import { AccountCenterControlValue, type SignInExperience } from '@logto/schemas';
+import { AccountCenterControlValue, type SignInExperience, userProfileKeys } from '@logto/schemas';
 import { useCallback, useMemo, type ChangeEvent } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
@@ -66,6 +66,10 @@ function AccountCenter({ isActive, data }: Props) {
     return data.mfa.factors.length > 0;
   }, [data.mfa]);
 
+  // When passkey sign-in is enabled, passkey can serve as a verification method, so the
+  // "no MFA factor configured" warning on the MFA field is no longer relevant.
+  const isPasskeySignInEnabled = Boolean(data.passkeySignIn.enabled);
+
   const handleToggle = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       setValue('accountCenter.enabled', event.target.checked, { shouldDirty: true });
@@ -82,6 +86,48 @@ function AccountCenter({ isActive, data }: Props) {
       setValue(`accountCenter.fields.${field}`, value, { shouldDirty: true });
     },
     [setValue]
+  );
+
+  const profileFieldKeySet = useMemo(() => new Set<string>([...userProfileKeys, 'fullname']), []);
+
+  const getProfileFieldControlKey = useCallback(
+    (fieldName: string): AccountCenterFieldKey => {
+      if (fieldName === 'name' || fieldName === 'avatar') {
+        return fieldName;
+      }
+      if (profileFieldKeySet.has(fieldName)) {
+        return 'profile';
+      }
+      return 'customData';
+    },
+    [profileFieldKeySet]
+  );
+
+  const getProfileFieldDisabledReason = useCallback(
+    (fieldName: string): string | undefined => {
+      const controlKey = getProfileFieldControlKey(fieldName);
+      const controlValue = fields[controlKey];
+
+      if (controlValue !== AccountCenterControlValue.Off) {
+        return undefined;
+      }
+
+      switch (controlKey) {
+        case 'name': {
+          return t('sign_in_exp.account_center.profile_fields.disabled_hint.name');
+        }
+        case 'avatar': {
+          return t('sign_in_exp.account_center.profile_fields.disabled_hint.avatar');
+        }
+        case 'profile': {
+          return t('sign_in_exp.account_center.profile_fields.disabled_hint.profile');
+        }
+        default: {
+          return t('sign_in_exp.account_center.profile_fields.disabled_hint.custom_data');
+        }
+      }
+    },
+    [fields, getProfileFieldControlKey, t]
   );
 
   return (
@@ -105,7 +151,7 @@ function AccountCenter({ isActive, data }: Props) {
           </FormField>
         </div>
       </FormCard>
-      <IntegratePrebuiltUi />
+      <IntegratePrebuiltUi getProfileFieldDisabledReason={getProfileFieldDisabledReason} />
       {accountCenterSections.map((section) => (
         <FormCard key={section.key} title={section.title} description={section.description}>
           <div className={styles.cardContent}>
@@ -142,6 +188,7 @@ function AccountCenter({ isActive, data }: Props) {
                       item={item}
                       value={fields[item.key]}
                       isMfaEnabled={isMfaEnabled}
+                      isPasskeySignInEnabled={isPasskeySignInEnabled}
                       isGlobalDisabled={!isAccountApiEnabled}
                       fieldOptions={fieldOptions}
                       onChange={handleFieldChange}
@@ -164,7 +211,7 @@ function AccountCenter({ isActive, data }: Props) {
         title="sign_in_exp.account_center.custom_css.title"
         description="sign_in_exp.account_center.custom_css.description"
       >
-        <FormField title="sign_in_exp.custom_ui.css_code_editor_title">
+        <FormField title="sign_in_exp.custom_ui.css_code_editor_field_title">
           <Controller
             name="accountCenter.customCss"
             control={control}

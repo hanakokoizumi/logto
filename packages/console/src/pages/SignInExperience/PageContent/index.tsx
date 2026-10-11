@@ -23,10 +23,12 @@ import { trySubmitSafe } from '@/utils/form';
 
 import Preview from '../components/Preview';
 import { SignInExperienceContext } from '../contexts/SignInExperienceContextProvider';
+import useBrandingEntitlements from '../hooks/use-branding-entitlements';
 import usePreviewConfigs from '../hooks/use-preview-configs';
 import {
   SignInExperienceTab,
   convertAccountCenterToForm,
+  normalizeAccountCenterFieldsForSubmit,
   type SignInExperiencePageManagedData,
   type SignInExperienceForm,
   type AccountCenterFormValues,
@@ -70,6 +72,7 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
   const { getPathname } = useTenantPathname();
   const { isUploading, cancelUpload } = useContext(SignInExperienceContext);
   const { isConnectorTypeEnabled, ready: isConnectorsReady } = useEnabledConnectorTypes();
+  const { isHideLogtoBrandingAvailable, isCustomUiCspEnabled } = useBrandingEntitlements();
 
   const [dataToCompare, setDataToCompare] = useState<SignInExperiencePageManagedData>();
 
@@ -103,10 +106,16 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
         accountCenter.webauthnRelatedOrigins
       );
       const deleteAccountUrl = normalizeDeleteAccountUrl(accountCenter.deleteAccountUrl);
+      const fields = accountCenter.enabled
+        ? normalizeAccountCenterFieldsForSubmit(accountCenter.fields, data.accountCenter.fields)
+        : {};
 
       const updatedData = await api
         .patch('api/sign-in-exp', {
-          json: sieFormDataParser.toSignInExperience(formValues),
+          json: sieFormDataParser.toSignInExperience(formValues, {
+            isHideLogtoBrandingAvailable,
+            isCustomUiCspEnabled,
+          }),
         })
         .json<SignInExperience>();
 
@@ -115,10 +124,11 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
           json: {
             enabled: accountCenter.enabled,
             // Disable all fields when account center is disabled
-            fields: accountCenter.enabled ? accountCenter.fields : {},
+            fields,
             webauthnRelatedOrigins,
             deleteAccountUrl,
             customCss: accountCenter.customCss?.length ? accountCenter.customCss : null,
+            profileFields: accountCenter.profileFields,
           },
         })
         .json<AccountCenterConfig>();
@@ -136,7 +146,18 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
     } finally {
       setIsSaving(false);
     }
-  }, [api, getValues, onAccountCenterUpdated, onSignInExperienceUpdated, reset, t, updateConfigs]);
+  }, [
+    api,
+    data.accountCenter.fields,
+    getValues,
+    isCustomUiCspEnabled,
+    isHideLogtoBrandingAvailable,
+    onAccountCenterUpdated,
+    onSignInExperienceUpdated,
+    reset,
+    t,
+    updateConfigs,
+  ]);
 
   const onSubmit = useCallback(
     async (formData: SignInExperienceForm) => {
@@ -145,8 +166,14 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
           return;
         }
 
-        const formatted = sieFormDataParser.toSignInExperience(formData);
-        const original = signInExperienceToUpdatedDataParser(data);
+        const formatted = sieFormDataParser.toSignInExperience(formData, {
+          isHideLogtoBrandingAvailable,
+          isCustomUiCspEnabled,
+        });
+        const original = signInExperienceToUpdatedDataParser(data, {
+          isHideLogtoBrandingAvailable,
+          isCustomUiCspEnabled,
+        });
 
         // Sign-in methods changed, need to show confirm modal first.
         if (!hasSignUpAndSignInConfigChanged(original, formatted)) {
@@ -159,7 +186,7 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
       });
       return handler(formData);
     },
-    [data, isSaving, saveData]
+    [data, isCustomUiCspEnabled, isHideLogtoBrandingAvailable, isSaving, saveData]
   );
 
   const onDiscard = useCallback(() => {
@@ -181,10 +208,13 @@ function PageContent({ data, onSignInExperienceUpdated, onAccountCenterUpdated }
       setValue('forgotPasswordMethods', []);
     } else if (!formData.forgotPasswordMethods) {
       // If this is null, we should initialize it based on current connector setup
-      // (email verification code when an email connector is available).
+      // if has email connector, then add email verification code method, also for sms connector
       const initialMethods = [
         ...(isConnectorTypeEnabled(ConnectorType.Email)
           ? [ForgotPasswordMethod.EmailVerificationCode]
+          : []),
+        ...(isConnectorTypeEnabled(ConnectorType.Sms)
+          ? [ForgotPasswordMethod.PhoneVerificationCode]
           : []),
       ];
 

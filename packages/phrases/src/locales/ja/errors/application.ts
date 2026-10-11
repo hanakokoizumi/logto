@@ -25,6 +25,7 @@ const application = {
   should_delete_custom_domains_first: 'まずカスタムドメインを削除する必要があります。',
   no_legacy_secret_found: 'アプリケーションにレガシーシークレットがありません。',
   secret_name_exists: 'シークレット名はすでに存在します。',
+  sync_application_secret_failed: 'アプリケーションシークレットの同期に失敗しました。',
   saml: {
     use_saml_app_api:
       'SAML アプリを操作するには、`[METHOD] /saml-applications(/.*)?` API を使用します。',
@@ -32,6 +33,8 @@ const application = {
     reach_oss_limit: 'OSS の上限 {{limit}} に達したため、これ以上 SAML アプリを作成できません。',
     acs_url_binding_not_supported:
       'SAML アサーションを受信するには HTTP-POST バインディングのみがサポートされています。',
+    acs_url_scheme_not_supported:
+      'Assertion Consumer Service URL では HTTP および HTTPS スキームのみがサポートされています。',
     can_not_delete_active_secret: 'アクティブなシークレットを削除できません。',
     no_active_secret: 'アクティブなシークレットが見つかりません。',
     entity_id_required: 'メタデータを生成するには、エンティティ ID が必要です。',

@@ -36,6 +36,8 @@ const description = {
   reset_password: 'Resetta la password',
   reset_password_description:
     'Inserisci il {{types, list(type: disjunction;)}} associato al tuo account, e ti invieremo il codice di verifica per resettare la password.',
+  reset_password_magic_link_description:
+    "Inserisci l'indirizzo email associato al tuo account per continuare a reimpostare la password.",
   new_password: 'Nuova password',
   set_password: 'Imposta una password',
   password_changed: 'Password cambiata',
@@ -46,6 +48,7 @@ const description = {
   enter_username: 'Imposta username',
   enter_username_description:
     "L'username è un'alternativa per l'accesso. L'username deve contenere solo lettere, numeri e trattini bassi.",
+  enter_username_policy_description: "L'username è un'alternativa per l'accesso. {{requirements}}",
   link_email: 'Collega emails',
   link_phone: 'Collega telefono',
   link_email_or_phone: 'Collega email o telefono',
@@ -84,12 +87,25 @@ const description = {
     character_types_other:
       'dovrebbe contenere almeno {{count}} tipi di lettere maiuscole, lettere minuscole, numeri e simboli',
   },
+  username_requirements: 'Nome utente {{items, list}}.',
+  username_requirement: {
+    length: 'deve contenere da {{min}} a {{max}} caratteri',
+    characters: 'può contenere solo {{characters, list}}',
+  },
+  username_character: {
+    uppercase: 'lettere maiuscole',
+    lowercase: 'lettere minuscole',
+    number: 'numeri',
+    underscore: 'trattini bassi',
+  },
   use: 'Utilizzare',
   single_sign_on_email_form: 'Inserisci il tuo indirizzo email aziendale',
   single_sign_on_connectors_list:
     "La tua azienda ha abilitato il Single Sign-On per l'account email {{email}}. Puoi continuare ad accedere con i seguenti fornitori di SSO.",
   single_sign_on_enabled: 'Il Single Sign-On è abilitato per questo account',
   authorize_title: 'Autorizza {{name}}',
+  unregistered_client_notice:
+    'Questa app è autodichiarata da <hostname>{{host}}</hostname>, inclusi nome e logo. Verifica il nome host prima di continuare.',
   request_permission: '{{name}} sta richiedendo accesso a:',
   grant_organization_access: "Concedi accesso all'organizzazione:",
   authorize_personal_data_usage: "Autorizza l'utilizzo dei tuoi dati personali:",
@@ -109,6 +125,9 @@ const description = {
   identifier_register_description:
     'Inserisci il tuo {{types, list(type: disjunction;)}} per creare un nuovo account.',
   all_account_creation_options: 'Tutte le opzioni di creazione account',
+  password_expired:
+    'La tua password è scaduta e deve essere reimpostata prima di poter effettuare l’accesso.',
+  password_expiration_reset: 'Reimposta password',
   back_to_sign_in: 'Torna al login',
   support_email: 'Email di supporto: <link></link>',
   support_website: 'Sito web di supporto: <link></link>',

@@ -48,12 +48,30 @@ const session = {
     suggest_additional_mfa:
       'Para maior proteção, considere adicionar outro método de MFA. Você pode pular esta etapa e continuar.',
   },
+  trusted_device_suggest_opt_in: 'Escolha se deseja confiar neste dispositivo.',
+  step_up: {
+    invalid_interaction_event:
+      'A autenticação step-up está disponível apenas para interações de login.',
+    subject_not_found:
+      'Nenhuma sessão autenticada foi encontrada para a autenticação step-up. Faça login novamente.',
+    forbidden_route: 'Esta rota não é permitida durante a autenticação step-up.',
+    forbidden_identifier:
+      'Um identificador não é permitido durante a autenticação step-up. Tente novamente sem o campo identificador.',
+    acr_not_satisfied:
+      'A verificação concluída não atende ao contexto de autenticação solicitado. Verifique outro método.',
+    require_verification:
+      'É necessário verificar um dos seus métodos existentes para atingir o contexto de autenticação solicitado.',
+  },
   passkey_sign_in: {
     pending_info_not_found:
       'Não foi possível encontrar as informações pendentes de login com passkey. Inicie o fluxo de login novamente.',
     conflict_rp_id:
       'O ID da Relying Party não corresponde. Use o cliente correto para fazer login.',
     sso_users_not_allowed: 'A opção de login com passkey não está disponível para usuários SSO.',
+  },
+  password_expiration: {
+    reset_not_allowed:
+      'A redefinição de senha só é permitida após a senha expirar na sessão de login atual.',
   },
   sso_enabled:
     'O login único está habilitado para este e-mail fornecido. Faça login com SSO, por favor.',

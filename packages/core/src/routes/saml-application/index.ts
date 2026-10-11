@@ -2,7 +2,6 @@ import {
   ApplicationType,
   ProductEvent,
   samlApplicationCreateGuard,
-  samlApplicationPatchGuard,
   samlApplicationResponseGuard,
   samlApplicationSecretResponseGuard,
   SamlApplicationSecrets,
@@ -17,6 +16,7 @@ import {
   calculateCertificateFingerprints,
   assembleSamlApplication,
   validateAcsUrl,
+  validateSamlAuthnRequestConfig,
 } from '#src/libraries/saml-application/utils.js';
 import koaGuard from '#src/middleware/koa-guard.js';
 import { koaQuotaGuard } from '#src/middleware/koa-quota-guard.js';
@@ -25,20 +25,17 @@ import { generateInternalSecret } from '#src/routes/applications/application-sec
 import type { ManagementApiRouter, RouterInitArgs } from '#src/routes/types.js';
 import { getSamlAppCallbackUrl } from '#src/saml-application/SamlApplication/utils.js';
 import assertThat from '#src/utils/assert-that.js';
-import { parseSearchParamsForSearch } from '#src/utils/search.js';
 
 import { captureEvent } from '../../utils/posthog.js';
+import { assertApplicationAccessControlHasRules } from '../applications/application-access-control/utils.js';
+
+import { samlApplicationPatchGuard } from './types.js';
 
 export default function samlApplicationRoutes<T extends ManagementApiRouter>(
   ...[router, { id: tenantId, queries, libraries }]: RouterInitArgs<T>
 ) {
   const {
-    applications: {
-      countApplications,
-      insertApplication,
-      findApplicationById,
-      deleteApplicationById,
-    },
+    applications: { insertApplication, findApplicationById, deleteApplicationById },
     samlApplicationConfigs: { insertSamlApplicationConfig },
     samlApplicationSecrets: {
       deleteSamlApplicationSecretById,
@@ -58,36 +55,19 @@ export default function samlApplicationRoutes<T extends ManagementApiRouter>(
 
   router.post(
     '/saml-applications',
-    EnvSet.values.isCloud
-      ? koaQuotaGuard({ key: 'samlApplicationsLimit', quota })
-      : // OSS can create at most 3 SAML apps.
-        async (ctx, next) => {
-          const { searchParams } = ctx.URL;
-          // This will only parse the `search` query param, other params will be ignored. Please use query guard to validate them.
-          const search = parseSearchParamsForSearch(searchParams);
-          const { count: samlAppCount } = await countApplications({
-            search,
-            types: [ApplicationType.SAML],
-          });
-
-          assertThat(
-            samlAppCount < 3,
-            new RequestError({
-              code: 'application.saml.reach_oss_limit',
-              status: 403,
-              limit: 3,
-            })
-          );
-
-          return next();
-        },
+    // Outside Cloud, the cap follows the installed license: 3 without one, lifted by a Pro license.
+    koaQuotaGuard({ key: 'samlApplicationsLimit', quota }),
     koaGuard({
       body: samlApplicationCreateGuard,
       response: samlApplicationResponseGuard,
       status: [201, 400, 422],
     }),
     async (ctx, next) => {
-      const { name, description, customData, ...config } = ctx.guard.body;
+      const { name, description, customData, ...config } = samlApplicationCreateGuard.parse(
+        ctx.guard.body
+      );
+
+      validateSamlAuthnRequestConfig(config.authnRequestConfig);
 
       if (config.acsUrl) {
         validateAcsUrl(config.acsUrl);
@@ -178,6 +158,12 @@ export default function samlApplicationRoutes<T extends ManagementApiRouter>(
     }),
     async (ctx, next) => {
       const { id } = ctx.guard.params;
+
+      if (ctx.guard.body.appLevelAccessControlEnabled === true) {
+        assertApplicationAccessControlHasRules(
+          await queries.applicationAccessControl.findApplicationAccessControl(id)
+        );
+      }
 
       const updatedSamlApplication = await updateSamlApplicationById(id, ctx.guard.body);
 

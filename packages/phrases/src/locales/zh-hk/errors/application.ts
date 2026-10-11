@@ -21,11 +21,13 @@ const application = {
   should_delete_custom_domains_first: '應該先刪除自訂域名。',
   no_legacy_secret_found: '此應用程式沒有傳統密鑰。',
   secret_name_exists: '密鑰名稱已存在。',
+  sync_application_secret_failed: '同步應用程式密鑰失敗。',
   saml: {
     use_saml_app_api: '使用 `[METHOD] /saml-applications(/.*)?` API 來操作 SAML 應用程式。',
     saml_application_only: '此 API 只適用於 SAML 應用程式。',
     reach_oss_limit: '你不能創建更多的 SAML 應用程式，因為已達到限制 {{limit}}。',
     acs_url_binding_not_supported: '只支持 HTTP-POST 綁定來接收 SAML 斷言。',
+    acs_url_scheme_not_supported: '斷言消費者服務（ACS）URL 僅支持 HTTP 和 HTTPS 協定。',
     can_not_delete_active_secret: '不能刪除活動密鑰。',
     no_active_secret: '未找到活動密鑰。',
     entity_id_required: '生成元數據需要實體 ID。',

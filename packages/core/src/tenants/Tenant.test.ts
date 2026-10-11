@@ -44,6 +44,7 @@ const adminMiddlewareList = middlewareList.map(
 
 mockEsm('./utils.js', () => ({
   getTenantDatabaseDsn: async () => 'postgres://mock.db.url',
+  getAdminTenantPrivateSigningKeys: async () => [],
 }));
 
 // eslint-disable-next-line unicorn/consistent-function-scoping
@@ -51,13 +52,17 @@ mockEsmDefault('#src/oidc/init.js', () => () => createMockProvider());
 
 const Tenant = await pickDefault(import('./Tenant.js'));
 
+/** Tenants reach the default tenant through the pool, which these tests never need. */
+const withDefaultTenant = jest.fn();
+
 describe('Tenant', () => {
   afterEach(() => {
     jest.clearAllMocks();
+    jest.useRealTimers();
   });
 
   it('should call middleware factories for user tenants', async () => {
-    await Tenant.create({ id: defaultTenantId, redisCache: new RedisCache() });
+    await Tenant.create({ id: defaultTenantId, redisCache: new RedisCache(), withDefaultTenant });
 
     for (const [, middleware, shouldCall] of userMiddlewareList) {
       if (shouldCall) {
@@ -69,7 +74,7 @@ describe('Tenant', () => {
   });
 
   it('should call middleware factories for the admin tenant', async () => {
-    await Tenant.create({ id: adminTenantId, redisCache: new RedisCache() });
+    await Tenant.create({ id: adminTenantId, redisCache: new RedisCache(), withDefaultTenant });
 
     for (const [, middleware, shouldCall] of adminMiddlewareList) {
       if (shouldCall) {
@@ -83,15 +88,114 @@ describe('Tenant', () => {
 
 describe('Tenant `.run()`', () => {
   it('should return a function ', async () => {
-    const tenant = await Tenant.create({ id: defaultTenantId, redisCache: new RedisCache() });
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
     expect(typeof tenant.run).toBe('function');
+  });
+});
+
+describe('Tenant request lifecycle and disposal', () => {
+  it('reserves and releases request slots', async () => {
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
+
+    expect(tenant.requestStart()).toBe(true);
+    tenant.requestEnd();
+  });
+
+  it('ends the database pool and rejects new requests once disposed', async () => {
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
+    const end = Sinon.stub(tenant.envSet, 'end').resolves();
+
+    expect(await tenant.dispose()).toBe(true);
+
+    expect(end.calledOnce).toBe(true);
+    // The instance must not serve new requests after disposal.
+    expect(tenant.requestStart()).toBe(false);
+  });
+
+  it('waits for in-flight requests before ending the database pool', async () => {
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
+    const end = Sinon.stub(tenant.envSet, 'end').resolves();
+
+    expect(tenant.requestStart()).toBe(true);
+
+    const disposed = tenant.dispose();
+    await Promise.resolve();
+
+    // The pool must stay alive while a request is still in flight.
+    expect(end.called).toBe(false);
+    // New requests must be rejected while draining.
+    expect(tenant.requestStart()).toBe(false);
+    expect(end.called).toBe(false);
+
+    tenant.requestEnd();
+    expect(await disposed).toBe(true);
+
+    expect(end.calledOnce).toBe(true);
+    expect(tenant.requestStart()).toBe(false);
+  });
+
+  it('keeps the database pool open until the disposal drain timeout elapses', async () => {
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
+    const end = Sinon.stub(tenant.envSet, 'end').resolves();
+
+    expect(tenant.requestStart()).toBe(true);
+
+    jest.useFakeTimers();
+    const disposed = tenant.dispose();
+    await Promise.resolve();
+
+    jest.advanceTimersByTime(129_999);
+    expect(end.called).toBe(false);
+
+    jest.advanceTimersByTime(1);
+
+    await expect(disposed).resolves.toBe('timeout');
+    expect(end.calledOnce).toBe(true);
+  });
+
+  it('rejects when ending the database pool fails while draining requests', async () => {
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
+    const error = new Error('failed to end database pool');
+    const end = Sinon.stub(tenant.envSet, 'end').rejects(error);
+
+    expect(tenant.requestStart()).toBe(true);
+
+    const disposed = tenant.dispose();
+    tenant.requestEnd();
+
+    await expect(disposed).rejects.toThrow(error);
+    expect(end.calledOnce).toBe(true);
   });
 });
 
 describe('Tenant cache health check', () => {
   it('uses the qualified rotation-state update query when invalidating cache', async () => {
     const redisCache = new RedisCache();
-    const tenant = await Tenant.create({ id: defaultTenantId, redisCache });
+    const tenant = await Tenant.create({ id: defaultTenantId, redisCache, withDefaultTenant });
     const methods = createMockCommonQueryMethods();
     const logtoConfigQueries = createLogtoConfigQueries(methods as never, tenant.wellKnownCache);
 
@@ -106,7 +210,7 @@ describe('Tenant cache health check', () => {
       logtoConfigQueries.setTenantCacheExpiresAt
     );
     Sinon.stub(tenant.wellKnownCache, 'set').value(jest.fn());
-    Sinon.stub(tenant.wellKnownCache, 'delete').value(jest.fn());
+    Sinon.stub(tenant.wellKnownCache, 'invalidate').value(jest.fn());
 
     await tenant.invalidateCache();
 
@@ -118,7 +222,7 @@ describe('Tenant cache health check', () => {
 
   it('should persist tenant invalidation state and mirror it to cache', async () => {
     const redisCache = new RedisCache();
-    const tenant = await Tenant.create({ id: defaultTenantId, redisCache });
+    const tenant = await Tenant.create({ id: defaultTenantId, redisCache, withDefaultTenant });
     expect(typeof tenant.invalidateCache).toBe('function');
 
     const setTenantCacheExpiresAt = jest.fn(async () => ({
@@ -129,7 +233,7 @@ describe('Tenant cache health check', () => {
       setTenantCacheExpiresAt
     );
     Sinon.stub(tenant.wellKnownCache, 'set').value(jest.fn());
-    Sinon.stub(tenant.wellKnownCache, 'delete').value(jest.fn());
+    Sinon.stub(tenant.wellKnownCache, 'invalidate').value(jest.fn());
 
     await tenant.invalidateCache();
     expect(setTenantCacheExpiresAt).toHaveBeenCalledTimes(1);
@@ -149,7 +253,11 @@ describe('Tenant cache health check', () => {
   });
 
   it('should be able to check the health of tenant cache', async () => {
-    const tenant = await Tenant.create({ id: defaultTenantId, redisCache: new RedisCache() });
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
     expect(typeof tenant.checkHealth).toBe('function');
     expect(await tenant.checkHealth()).toBe(true);
 
@@ -161,7 +269,11 @@ describe('Tenant cache health check', () => {
   });
 
   it('prefers cached rotation state when checking tenant health', async () => {
-    const tenant = await Tenant.create({ id: defaultTenantId, redisCache: new RedisCache() });
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
 
     Sinon.stub(tenant.wellKnownCache, 'get').resolves({ tenantCacheExpiresAt: Date.now() });
     const getSigningKeyRotationState = jest.fn();
@@ -180,7 +292,11 @@ describe('Tenant cache health check', () => {
       set: jest.fn(),
       delete: jest.fn(),
     };
-    const tenant = await Tenant.create({ id: defaultTenantId, redisCache: redisBackedCache });
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: redisBackedCache,
+      withDefaultTenant,
+    });
     const setSigningKeyRotationAt = jest.fn(async () => ({
       tenantCacheExpiresAt: 2_222_222_222,
       signingKeyRotationAt: 1_234_567_890,
@@ -190,7 +306,7 @@ describe('Tenant cache health check', () => {
       setSigningKeyRotationAt
     );
     Sinon.stub(tenant.wellKnownCache, 'set').value(jest.fn());
-    Sinon.stub(tenant.wellKnownCache, 'delete').value(jest.fn());
+    Sinon.stub(tenant.wellKnownCache, 'invalidate').value(jest.fn());
 
     await tenant.scheduleSigningKeyRotation(1_234_567_890);
 
@@ -211,11 +327,15 @@ describe('Tenant cache health check', () => {
   });
 
   it('falls back to DB-backed rotation state when cached values are missing', async () => {
-    const tenant = await Tenant.create({ id: defaultTenantId, redisCache: new RedisCache() });
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
     const now = Date.now();
     Sinon.stub(tenant.wellKnownCache, 'get').resolves();
     Sinon.stub(tenant.wellKnownCache, 'set').value(jest.fn());
-    Sinon.stub(tenant.wellKnownCache, 'delete').value(jest.fn());
+    Sinon.stub(tenant.wellKnownCache, 'invalidate').value(jest.fn());
     Sinon.stub(tenant.queries.logtoConfigs, 'getSigningKeyRotationState').value(
       jest.fn(async () => ({ tenantCacheExpiresAt: now }))
     );
@@ -235,7 +355,11 @@ describe('Tenant cache health check', () => {
   });
 
   it('caches the empty rotation state to avoid repeated DB misses', async () => {
-    const tenant = await Tenant.create({ id: defaultTenantId, redisCache: new RedisCache() });
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
     const localCache = new MockWellKnownCache();
 
     Sinon.stub(tenant, 'wellKnownCache').value(localCache);
@@ -250,9 +374,17 @@ describe('Tenant cache health check', () => {
   });
 
   it('invalidates tenant instances when staged activation is due', async () => {
-    const tenant = await Tenant.create({ id: defaultTenantId, redisCache: new RedisCache() });
+    const tenant = await Tenant.create({
+      id: defaultTenantId,
+      redisCache: new RedisCache(),
+      withDefaultTenant,
+    });
+    const signingKeyRotationAt = Date.now() + 1000;
+
+    jest.useFakeTimers().setSystemTime(signingKeyRotationAt);
+
     Sinon.stub(tenant.queries.logtoConfigs, 'getSigningKeyRotationState').value(
-      jest.fn(async () => ({ signingKeyRotationAt: Date.now() - 1 }))
+      jest.fn(async () => ({ signingKeyRotationAt }))
     );
 
     expect(await tenant.checkHealth()).toBe(false);

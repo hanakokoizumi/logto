@@ -7,15 +7,14 @@ const account_center = {
     title: '账户',
     security_title: '安全',
     security_description: '你可以在这里修改账户设置，以确保账户安全。',
-    /** UNTRANSLATED */
-    profile_title: 'Personal info',
-    /** UNTRANSLATED */
-    profile_description: 'Change your personal information here.',
-    /** UNTRANSLATED */
-    sidebar_personal_info: 'Personal info',
-    /** UNTRANSLATED */
-    sidebar_security: 'Security',
+    profile_title: '个人信息',
+    profile_description: '在这里更改你的个人信息。',
+    sidebar_personal_info: '个人信息',
+    sidebar_security: '安全',
+    sidebar_sessions: '会话',
     support: '支持',
+    user_menu: '用户菜单',
+    sign_out: '退出登录',
   },
   verification: {
     title: '安全验证',
@@ -67,6 +66,7 @@ const account_center = {
   username: {
     title: '设置用户名',
     description: '用户名只能包含字母、数字和下划线。',
+    policy_description: '{{requirements}}',
     success: '用户名更新成功。',
   },
   security: {
@@ -94,7 +94,6 @@ const account_center = {
     backup_codes_count_other: '{{count}} 个备用码',
     view: '查看',
     manage: '管理',
-    turn_on_2_step_verification: '开启两步验证',
     turn_on_2_step_verification_description: '增加一层额外的安全保护。登录时将要求进行第二步验证。',
     turn_off_2_step_verification: '关闭两步验证',
     turn_off_2_step_verification_description:
@@ -102,6 +101,9 @@ const account_center = {
     disable_2_step_verification: '关闭',
     no_verification_method_warning:
       '你尚未添加第二种验证方式。请至少添加一种以在登录时启用两步验证。',
+    passkey_sign_in_prompt: '提示设置通行密钥',
+    passkey_sign_in_prompt_description:
+      '开启后，系统会提示你设置通行密钥，以实现更快速、更安全的登录。',
     account_removal: '账号删除',
     delete_your_account: '删除你的账号',
     delete_account: '删除账号',
@@ -114,6 +116,21 @@ const account_center = {
     email_removed: '邮箱地址已成功移除。',
     phone_removed: '手机号已成功移除。',
     username_removed: '用户名已成功移除。',
+    trusted_devices: {
+      title: 'MFA 受信任设备',
+      current_device: '当前设备',
+      expires_on: '于 {{date}} 到期',
+      unknown_location: '未知位置',
+      remove: '移除',
+      removed: '受信任设备已成功移除。',
+      loading: '加载中...',
+      empty: '暂无受信任设备。',
+      load_failed: '受信任设备加载失败，请重试。',
+      retry: '重试',
+      remove_confirmation_title: '移除受信任设备？',
+      remove_confirmation_description:
+        '下次在此设备上登录时，你需要再次完成 MFA。当前会话将保持有效。',
+    },
   },
   social: {
     linked: '已成功关联 {{connector}}。',
@@ -238,6 +255,29 @@ const account_center = {
     name_passkey_description:
       '您已成功验证此设备用于两步验证。自定义名称以便在拥有多个密钥时进行识别。',
     name_input_label: '名称',
+  },
+  sessions: {
+    page_title: '会话',
+    page_description: '管理你的活跃会话和已授权的第三方应用。',
+    title: '会话',
+    current_session: '当前会话',
+    signed_in_at: '登录于 {{date}}',
+    revoke_session: '退出登录',
+    revoke_session_title: '退出会话',
+    revoke_session_description: '这将退出该会话并撤销所有关联的访问权限。确定要继续吗？',
+    no_other_sessions: '没有其他活跃会话。',
+    loading: '加载中...',
+    third_party_apps_title: '第三方应用',
+    no_third_party_apps: '没有已授权的第三方应用。',
+    third_party_apps_load_failed: '第三方应用加载失败，请重试。',
+    granted_at: '授权于 {{date}}',
+    dynamic_app: '动态应用',
+    client_id: '客户端 ID: {{clientId}}',
+    revoke_grant: '移除',
+    revoke_grant_title: '移除第三方应用访问权限',
+    revoke_grant_description:
+      '这将撤销授予该应用的访问权限。此前已签发的访问令牌可能在过期前仍然有效。确定要继续吗？',
+    revoke_grant_failed: '部分授权撤销失败，请重试。',
   },
 };
 

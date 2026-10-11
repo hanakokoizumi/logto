@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Locale catalog mirrors the complete Account Center phrase schema. */
 const account_center = {
   home: {
     title: 'Página no encontrada',
@@ -7,15 +8,14 @@ const account_center = {
     title: 'Cuenta',
     security_title: 'Seguridad',
     security_description: 'Cambia aquí la configuración de tu cuenta para garantizar su seguridad.',
-    /** UNTRANSLATED */
-    profile_title: 'Personal info',
-    /** UNTRANSLATED */
-    profile_description: 'Change your personal information here.',
-    /** UNTRANSLATED */
-    sidebar_personal_info: 'Personal info',
-    /** UNTRANSLATED */
-    sidebar_security: 'Security',
+    profile_title: 'Información personal',
+    profile_description: 'Cambia tu información personal aquí.',
+    sidebar_personal_info: 'Información personal',
+    sidebar_security: 'Seguridad',
+    sidebar_sessions: 'Sesiones',
     support: 'Soporte',
+    user_menu: 'Menú de usuario',
+    sign_out: 'Cerrar sesión',
   },
   verification: {
     title: 'Verificación de seguridad',
@@ -72,6 +72,7 @@ const account_center = {
   username: {
     title: 'Establecer nombre de usuario',
     description: 'El nombre de usuario solo puede contener letras, números y guiones bajos.',
+    policy_description: '{{requirements}}',
     success: 'Nombre de usuario actualizado correctamente.',
   },
   security: {
@@ -99,7 +100,6 @@ const account_center = {
     backup_codes_count_other: '{{count}} códigos restantes',
     view: 'Ver',
     manage: 'Gestionar',
-    turn_on_2_step_verification: 'Activar verificación en dos pasos',
     turn_on_2_step_verification_description:
       'Añade una capa extra de seguridad. Se te pedirá un segundo paso de verificación al iniciar sesión.',
     turn_off_2_step_verification: 'Desactivar verificación en dos pasos',
@@ -108,6 +108,9 @@ const account_center = {
     disable_2_step_verification: 'Desactivar',
     no_verification_method_warning:
       'No has añadido un segundo método de verificación. Añade al menos uno para activar la verificación en dos pasos al iniciar sesión.',
+    passkey_sign_in_prompt: 'Solicitar la configuración de un passkey',
+    passkey_sign_in_prompt_description:
+      'Cuando está activado, se te pedirá que configures un passkey para iniciar sesión de forma más rápida y segura.',
     account_removal: 'Eliminación de la cuenta',
     delete_your_account: 'Elimina tu cuenta',
     delete_account: 'Eliminar cuenta',
@@ -123,6 +126,21 @@ const account_center = {
     email_removed: 'Dirección de correo electrónico eliminada correctamente.',
     phone_removed: 'Número de teléfono eliminado correctamente.',
     username_removed: 'Nombre de usuario eliminado correctamente.',
+    trusted_devices: {
+      title: 'Dispositivos de confianza de MFA',
+      current_device: 'Dispositivo actual',
+      expires_on: 'Caduca el {{date}}',
+      unknown_location: 'Ubicación desconocida',
+      remove: 'Eliminar',
+      removed: 'Dispositivo de confianza eliminado correctamente.',
+      loading: 'Cargando...',
+      empty: 'No hay dispositivos de confianza.',
+      load_failed: 'No se pudieron cargar los dispositivos de confianza. Inténtalo de nuevo.',
+      retry: 'Reintentar',
+      remove_confirmation_title: '¿Eliminar dispositivo de confianza?',
+      remove_confirmation_description:
+        'Tendrás que completar la MFA de nuevo en este dispositivo la próxima vez que inicies sesión. Tu sesión actual seguirá activa.',
+    },
   },
   social: {
     linked: 'Se vinculó {{connector}} correctamente.',
@@ -175,7 +193,7 @@ const account_center = {
   },
   mfa: {
     totp_already_added:
-      'You have already added an authenticator app. Please remove the existing one first.',
+      'Ya has añadido una aplicación de autenticación. Elimina la existente primero.',
     totp_not_enabled:
       'La aplicación de autenticación OTP no está habilitada. Por favor, contacte a su administrador para obtener ayuda.',
     backup_code_already_added:
@@ -260,6 +278,32 @@ const account_center = {
       'Has verificado correctamente este dispositivo para la autenticación en dos pasos. Personaliza el nombre para reconocerlo si tienes varias claves.',
     name_input_label: 'Nombre',
   },
+  sessions: {
+    page_title: 'Sesiones',
+    page_description: 'Administra tus sesiones activas y aplicaciones de terceros autorizadas.',
+    title: 'Sesiones',
+    current_session: 'Sesión actual',
+    signed_in_at: 'Inicio de sesión {{date}}',
+    revoke_session: 'Cerrar sesión',
+    revoke_session_title: 'Cerrar sesión',
+    revoke_session_description:
+      'Esto cerrará la sesión y revocará todo el acceso asociado. ¿Estás seguro de que deseas continuar?',
+    no_other_sessions: 'No hay otras sesiones activas.',
+    loading: 'Cargando...',
+    third_party_apps_title: 'Aplicaciones de terceros',
+    no_third_party_apps: 'No hay aplicaciones de terceros autorizadas.',
+    third_party_apps_load_failed:
+      'No se pudieron cargar las aplicaciones de terceros. Inténtalo de nuevo.',
+    granted_at: 'Autorizado {{date}}',
+    dynamic_app: 'Aplicación dinámica',
+    client_id: 'ID de cliente: {{clientId}}',
+    revoke_grant: 'Eliminar',
+    revoke_grant_title: 'Eliminar acceso de aplicación de terceros',
+    revoke_grant_description:
+      'Esto revocará el acceso otorgado a esta aplicación. Los tokens de acceso emitidos previamente pueden seguir siendo válidos hasta que expiren. ¿Estás seguro de que deseas continuar?',
+    revoke_grant_failed: 'Error al revocar algunos permisos. Por favor, inténtalo de nuevo.',
+  },
 };
 
 export default Object.freeze(account_center);
+/* eslint-enable max-lines */

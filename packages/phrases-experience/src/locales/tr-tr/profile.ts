@@ -26,6 +26,24 @@ const profile = {
     male: 'Erkek',
     prefer_not_to_say: 'Söylememeyi tercih ederim',
   },
+  checkbox_value: {
+    checked: 'Evet',
+    unchecked: 'Hayır',
+  },
+  avatar_upload: {
+    upload: 'Yükle',
+    remove: 'Kaldır',
+    uploading: 'Yükleniyor...',
+    hint: 'Önerilen boyut 1:1, en fazla {{limit}}.',
+    error_file_type: 'Dosya türü {{extensions}} olmalıdır.',
+    error_file_size: 'Dosya boyutu {{limit}} değerini aşmamalıdır.',
+    error_storage_not_configured: 'Fotoğraf yüklenemedi. Lütfen daha sonra tekrar deneyin.',
+    error_upload: 'Fotoğraf yüklenemedi. Lütfen tekrar deneyin.',
+    error_save: 'Fotoğrafınız kaydedilemedi. Lütfen tekrar deneyin.',
+    crop_title: 'Fotoğrafı kırp',
+    zoom: 'Yakınlaştır',
+    error_crop: 'Görüntü kırpılamadı. Lütfen tekrar deneyin.',
+  },
 };
 
 export default Object.freeze(profile);

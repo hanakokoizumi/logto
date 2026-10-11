@@ -20,6 +20,12 @@ export const layoutClassNames = Object.freeze({
   signature: 'logto_ac-signature',
   /** Top-level page header (logo + app name bar). */
   pageHeader: 'logto_ac-page-header',
+  /** User menu (avatar + dropdown) on the right side of the page header. */
+  userMenu: 'logto_ac-user-menu',
+  /** Avatar button that toggles the user menu dropdown. */
+  userMenuAvatar: 'logto_ac-user-menu-avatar',
+  /** Dropdown panel of the user menu. */
+  userMenuDropdown: 'logto_ac-user-menu-dropdown',
   /** Page title text (on Security / Home page). */
   pageTitle: 'logto_ac-page-title',
   /** Page description text (on Security / Home page). */
@@ -44,4 +50,10 @@ export const layoutClassNames = Object.freeze({
   sidebar: 'logto_ac-sidebar',
   /** A navigation item inside the sidebar. */
   sidebarItem: 'logto_ac-sidebar-item',
+  /** Full-page layout with multiple account nav destinations (sidebar or mobile tabs). */
+  withTabNav: 'logto_ac-with-tab-nav',
+  /** Mobile top tab navigation on the Security / Profile page. */
+  mobileTabNav: 'logto_ac-mobile-tab-nav',
+  /** A tab item inside the mobile tab navigation. */
+  mobileTabNavItem: 'logto_ac-mobile-tab-nav-item',
 });

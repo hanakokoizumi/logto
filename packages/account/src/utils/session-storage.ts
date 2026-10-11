@@ -13,6 +13,7 @@ const storageKeys = Object.freeze({
   socialFlow: `${storagePrefix}social-verification`,
   pendingReturn: `${storagePrefix}pending-return`,
   pendingVerifiedAction: `${storagePrefix}pending-verified-action`,
+  pendingSocialRemoveConnectorId: `${storagePrefix}pending-social-remove-connector-id`,
 });
 
 export type StoredVerificationRecord = {
@@ -31,11 +32,28 @@ export type StoredSocialFlowRecord =
       verificationRecordId: string;
       expiresAt: string;
       state: string;
+      mode: 'add' | 'change';
     }
   | {
       status: 'verified';
       verificationRecordId: string;
       expiresAt: string;
+      mode: 'add' | 'change';
+    };
+
+type StoredSocialFlowRecordData =
+  | {
+      status: 'pending';
+      verificationRecordId: string;
+      expiresAt: string;
+      state: string;
+      mode?: 'add' | 'change';
+    }
+  | {
+      status: 'verified';
+      verificationRecordId: string;
+      expiresAt: string;
+      mode?: 'add' | 'change';
     };
 
 const storedVerificationRecordGuard = s.object({
@@ -54,19 +72,26 @@ const storedSocialFlowRecordGuard = s.union([
     verificationRecordId: s.string(),
     expiresAt: s.string(),
     state: s.string(),
+    mode: s.optional(s.union([s.literal('add'), s.literal('change')])),
   }),
   s.object({
     status: s.literal('verified'),
     verificationRecordId: s.string(),
     expiresAt: s.string(),
+    mode: s.optional(s.union([s.literal('add'), s.literal('change')])),
   }),
 ]);
 
 const pendingVerifiedActions = Object.freeze([
   'enable-mfa',
   'disable-mfa',
+  'enable-passkey-prompt',
+  'disable-passkey-prompt',
   'remove-username',
   'remove-phone',
+  'remove-social',
+  'load-sessions',
+  'load-trusted-devices',
 ] as const);
 
 export type PendingVerifiedAction = (typeof pendingVerifiedActions)[number];
@@ -201,7 +226,7 @@ export const accountStorage = Object.freeze({
   },
   socialFlow: {
     get: (connectorId: string): StoredSocialFlowRecord | undefined => {
-      const record = getStructuredValue(
+      const record = getStructuredValue<StoredSocialFlowRecordData>(
         `${storageKeys.socialFlow}:${connectorId}`,
         storedSocialFlowRecordGuard,
         'session'
@@ -212,7 +237,7 @@ export const accountStorage = Object.freeze({
         return;
       }
 
-      return record;
+      return { ...record, mode: record.mode ?? 'add' };
     },
     setPending: (
       connectorId: string,
@@ -250,6 +275,15 @@ export const accountStorage = Object.freeze({
       removeItem(storageKeys.pendingVerifiedAction, 'session');
     },
   },
+  pendingSocialRemoveConnectorId: {
+    get: (): string | undefined => getString(storageKeys.pendingSocialRemoveConnectorId, 'session'),
+    set: (connectorId: string) => {
+      setString(storageKeys.pendingSocialRemoveConnectorId, connectorId, 'session');
+    },
+    clear: () => {
+      removeItem(storageKeys.pendingSocialRemoveConnectorId, 'session');
+    },
+  },
 });
 
 export const sessionStorage = Object.freeze({
@@ -268,6 +302,9 @@ export const sessionStorage = Object.freeze({
   getPendingVerifiedAction: accountStorage.pendingVerifiedAction.get,
   setPendingVerifiedAction: accountStorage.pendingVerifiedAction.set,
   clearPendingVerifiedAction: accountStorage.pendingVerifiedAction.clear,
+  getPendingSocialRemoveConnectorId: accountStorage.pendingSocialRemoveConnectorId.get,
+  setPendingSocialRemoveConnectorId: accountStorage.pendingSocialRemoveConnectorId.set,
+  clearPendingSocialRemoveConnectorId: accountStorage.pendingSocialRemoveConnectorId.clear,
   getIdentifier: () => getString(storageKeys.identifier, 'session'),
   setIdentifier: (value: string) => {
     setString(storageKeys.identifier, value, 'session');

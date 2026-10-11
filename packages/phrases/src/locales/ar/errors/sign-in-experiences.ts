@@ -36,6 +36,14 @@ const sign_in_experiences = {
     'عناصر قائمة البريد الإلكتروني المحظورة المخصصة غير صالحة: {{items, list(type:conjunction)}}. يجب أن يكون كل عنصر عنوان بريد إلكتروني أو نطاق بريد إلكتروني صالحًا، مثلاً، foo@example.com أو @example.com.',
   forgot_password_method_requires_connector:
     'طريقة استرداد كلمة المرور تتطلب تكوين موصل {{method}} ملائم.',
+  password_expiration_requires_forgot_password:
+    'يتطلب انتهاء صلاحية كلمة المرور تفعيل طريقة واحدة على الأقل لاسترجاع كلمة المرور مع موصل صالح.',
+  password_expiration_not_enabled:
+    'سياسة انتهاء صلاحية كلمة المرور غير مفعلة. قم بتفعيلها في إعدادات تجربة تسجيل الدخول قبل إنهاء صلاحية كلمات المرور.',
+  password_expiration_invalid_period_days:
+    'يجب أن تكون أيام الفترة الصالحة عددًا صحيحًا موجبًا عند تفعيل انتهاء صلاحية كلمة المرور.',
+  username_policy_case_conflicts_exist:
+    'لا يمكن التبديل إلى أسماء المستخدمين غير حساسة لحالة الأحرف بينما توجد أسماء مستخدمين تختلف فقط في حالة الأحرف. قم بحل النزاعات وحاول مرة أخرى.',
 };
 
 export default Object.freeze(sign_in_experiences);

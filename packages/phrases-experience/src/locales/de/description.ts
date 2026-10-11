@@ -37,6 +37,8 @@ const description = {
   reset_password: 'Passwort vergessen',
   reset_password_description:
     'Gib die {{types, list(type: disjunction;)}} deines Kontos ein und wir senden dir einen Bestätigungscode um dein Passwort zurückzusetzen.',
+  reset_password_magic_link_description:
+    'Gib die mit deinem Konto verknüpfte E-Mail-Adresse ein, um mit dem Zurücksetzen deines Passworts fortzufahren.',
   new_password: 'Neues Passwort',
   set_password: 'Passwort setzen',
   password_changed: 'Passwort geändert',
@@ -47,6 +49,8 @@ const description = {
   enter_username: 'Benutzernamen festlegen',
   enter_username_description:
     'Der Benutzername kann für die Anmeldung verwendet werden. Der Benutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten.',
+  enter_username_policy_description:
+    'Der Benutzername kann für die Anmeldung verwendet werden. {{requirements}}',
   link_email: 'Email verknüpfen',
   link_phone: 'Telefonnummer verknüpfen',
   link_email_or_phone: 'Email oder Telefonnummer verknüpfen',
@@ -86,12 +90,25 @@ const description = {
     character_types_other:
       'sollte mindestens {{count}} Kategorien der folgenden Zeichenarten enthalten: Großbuchstaben, Kleinbuchstaben, Zahlen und Symbole',
   },
+  username_requirements: 'Benutzername {{items, list}}.',
+  username_requirement: {
+    length: 'muss {{min}} bis {{max}} Zeichen lang sein',
+    characters: 'darf nur {{characters, list}} enthalten',
+  },
+  username_character: {
+    uppercase: 'Großbuchstaben',
+    lowercase: 'Kleinbuchstaben',
+    number: 'Zahlen',
+    underscore: 'Unterstriche',
+  },
   use: 'Verwenden',
   single_sign_on_email_form: 'Gib deine Unternehmens-E-Mail-Adresse ein.',
   single_sign_on_connectors_list:
     'Ihr Unternehmen hat Single Sign-On für das E-Mail-Konto {{email}} aktiviert. Sie können sich weiterhin mit den folgenden SSO-Anbietern anmelden.',
   single_sign_on_enabled: 'Single Sign-On ist für dieses Konto aktiviert',
   authorize_title: 'Autorisieren {{name}}',
+  unregistered_client_notice:
+    'Diese App wird von <hostname>{{host}}</hostname> selbst deklariert, einschließlich Name und Logo. Bitte überprüfen Sie den Hostnamen, bevor Sie fortfahren.',
   request_permission: '{{name}} fordert Zugang zu:',
   grant_organization_access: 'Gewähren Sie der Organisation Zugriff:',
   authorize_personal_data_usage: 'Erlauben Sie die Nutzung Ihrer persönlichen Daten:',
@@ -110,6 +127,9 @@ const description = {
   identifier_register_description:
     'Geben Sie Ihre {{types, list(type: disjunction;)}} ein, um ein neues Konto zu erstellen.',
   all_account_creation_options: 'Alle Kontoerstellungsoptionen',
+  password_expired:
+    'Ihr Passwort ist abgelaufen und muss zurückgesetzt werden, bevor Sie sich anmelden können.',
+  password_expiration_reset: 'Passwort zurücksetzen',
   back_to_sign_in: 'Zurück zur Anmeldung',
   support_email: 'Support-E-Mail: <link></link>',
   support_website: 'Support-Website: <link></link>',

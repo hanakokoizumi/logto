@@ -26,6 +26,24 @@ const profile = {
     male: 'Male',
     prefer_not_to_say: 'Prefer not to say',
   },
+  checkbox_value: {
+    checked: 'Yes',
+    unchecked: 'No',
+  },
+  avatar_upload: {
+    upload: 'Upload',
+    remove: 'Remove',
+    uploading: 'Uploading...',
+    hint: 'Recommended size 1:1, up to {{limit}}.',
+    error_file_type: 'File type must be {{extensions}}.',
+    error_file_size: 'File size must not exceed {{limit}}.',
+    error_storage_not_configured: 'Unable to upload your photo. Please try again later.',
+    error_upload: 'Failed to upload photo. Please try again.',
+    error_save: 'Failed to save your photo. Please try again.',
+    crop_title: 'Crop your photo',
+    zoom: 'Zoom',
+    error_crop: 'Failed to crop the image. Please try again.',
+  },
 };
 
 export default Object.freeze(profile);

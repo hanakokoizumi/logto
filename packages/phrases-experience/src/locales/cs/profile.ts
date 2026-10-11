@@ -26,6 +26,24 @@ const profile = {
     male: 'Muž',
     prefer_not_to_say: 'Nechci uvádět',
   },
+  checkbox_value: {
+    checked: 'Ano',
+    unchecked: 'Ne',
+  },
+  avatar_upload: {
+    upload: 'Nahrát',
+    remove: 'Odebrat',
+    uploading: 'Nahrávání...',
+    hint: 'Doporučená velikost 1:1, maximálně {{limit}}.',
+    error_file_type: 'Typ souboru musí být {{extensions}}.',
+    error_file_size: 'Velikost souboru nesmí překročit {{limit}}.',
+    error_storage_not_configured: 'Fotografii se nepodařilo nahrát. Zkuste to znovu později.',
+    error_upload: 'Nepodařilo se nahrát fotografii. Zkuste to znovu.',
+    error_save: 'Nepodařilo se uložit vaši fotku. Zkuste to prosím znovu.',
+    crop_title: 'Oříznout fotku',
+    zoom: 'Přiblížení',
+    error_crop: 'Oříznutí obrázku se nezdařilo. Zkuste to znovu.',
+  },
 };
 
 export default Object.freeze(profile);

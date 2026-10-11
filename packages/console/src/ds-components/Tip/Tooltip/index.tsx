@@ -83,9 +83,7 @@ function Tooltip({
     const dom = anchorRef.current;
 
     const enterHandler = () => {
-      if (!isVisible) {
-        setIsVisible(true);
-      }
+      setIsVisible(true);
     };
 
     const leaveHandler = () => {
@@ -94,12 +92,16 @@ function Tooltip({
 
     dom.addEventListener('mouseenter', enterHandler);
     dom.addEventListener('mouseleave', leaveHandler);
+    dom.addEventListener('focusin', enterHandler);
+    dom.addEventListener('focusout', leaveHandler);
 
     return () => {
       dom.removeEventListener('mouseenter', enterHandler);
       dom.removeEventListener('mouseleave', leaveHandler);
+      dom.removeEventListener('focusin', enterHandler);
+      dom.removeEventListener('focusout', leaveHandler);
     };
-  }, [anchorRef, isVisible, isKeepOpen]);
+  }, [anchorRef, isKeepOpen]);
 
   useEffect(() => {
     if (!isVisible) {

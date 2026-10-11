@@ -1,12 +1,14 @@
 import { appInsights } from '@logto/app-insights/node';
 import { UserScope } from '@logto/core-kit';
-import { VerificationType, AccountCenterControlValue } from '@logto/schemas';
+import { VerificationType, AccountCenterControlValue, type User } from '@logto/schemas';
 import { trySafe } from '@silverhand/essentials';
 import { z } from 'zod';
 
 import RequestError from '#src/errors/RequestError/index.js';
+import type { HookContextManager } from '#src/libraries/hook/context-manager.js';
 import { buildVerificationRecordByIdAndType } from '#src/libraries/verification.js';
 import koaGuard from '#src/middleware/koa-guard.js';
+import { assertFirstPartyClient } from '#src/utils/assert-first-party-client.js';
 import assertThat from '#src/utils/assert-that.js';
 import { buildAppInsightsTelemetry } from '#src/utils/request.js';
 import { assertCanDeleteSocialIdentity } from '#src/utils/user.js';
@@ -14,6 +16,7 @@ import { assertCanDeleteSocialIdentity } from '#src/utils/user.js';
 import type { UserRouter, RouterInitArgs } from '../types.js';
 
 import { accountApiPrefix } from './constants.js';
+import { assertIdentityVerifiedIfRequired } from './utils/has-security-verification-method.js';
 
 export default function identitiesRoutes<T extends UserRouter>(
   ...[router, { queries, libraries }]: RouterInitArgs<T>
@@ -28,74 +31,146 @@ export default function identitiesRoutes<T extends UserRouter>(
     socials: { upsertSocialTokenSetSecret },
   } = libraries;
 
+  type LinkSocialIdentityCoreParams = {
+    user: User;
+    newIdentifierVerificationRecordId: string;
+    allowReplace: boolean;
+    appendDataHookContext: HookContextManager['appendDataHookContext'];
+    getAppInsightsContext: () => Partial<Record<string, unknown>>;
+  };
+
+  /**
+   * Core logic for linking a new social identity that is shared between the
+   * POST (add) and PUT (replace) endpoints. Auth & permissions are checked
+   * by the callers before invoking this function.
+   */
+  const linkSocialIdentityCore = async ({
+    user,
+    newIdentifierVerificationRecordId,
+    allowReplace,
+    appendDataHookContext,
+    getAppInsightsContext,
+  }: LinkSocialIdentityCoreParams) => {
+    const newVerificationRecord = await buildVerificationRecordByIdAndType({
+      type: VerificationType.Social,
+      id: newIdentifierVerificationRecordId,
+      queries,
+      libraries,
+    });
+    assertThat(newVerificationRecord.isVerified, 'verification_record.not_found');
+
+    const {
+      socialIdentity: { target, userInfo },
+    } = await newVerificationRecord.toUserProfile();
+
+    await checkIdentifierCollision({ identity: { target, id: userInfo.id } }, user.id);
+
+    const currentUser = await findUserById(user.id);
+    const existingIdentity = currentUser.identities[target];
+
+    if (!allowReplace) {
+      assertThat(!existingIdentity, 'user.identity_already_in_use');
+    }
+
+    const updatedUser = await updateUserById(user.id, {
+      identities: {
+        ...currentUser.identities,
+        [target]: {
+          userId: userInfo.id,
+          details: userInfo,
+        },
+      },
+    });
+
+    appendDataHookContext('User.Data.Updated', { user: updatedUser });
+
+    const tokenSetSecret = await newVerificationRecord.getTokenSetSecret();
+
+    if (tokenSetSecret) {
+      // Upsert token set secret should not break the normal social link flow
+      await trySafe(
+        async () => upsertSocialTokenSetSecret(user.id, tokenSetSecret),
+        (error) => {
+          void appInsights.trackException(error, getAppInsightsContext());
+        }
+      );
+    } else if (allowReplace && existingIdentity && existingIdentity.userId !== userInfo.id) {
+      // Delete token set secret should not break the normal social link flow
+      await trySafe(
+        async () => queries.secrets.deleteSocialTokenSetSecretByUserIdAndTarget(user.id, target),
+        (error) => {
+          void appInsights.trackException(error, getAppInsightsContext());
+        }
+      );
+    }
+  };
+
   router.post(
     `${accountApiPrefix}/identities`,
     koaGuard({
       body: z.object({
         newIdentifierVerificationRecordId: z.string(),
       }),
-      status: [204, 400, 401],
+      status: [204, 400, 401, 403, 422],
     }),
     async (ctx, next) => {
-      const { id: userId, scopes, identityVerified } = ctx.auth;
+      const { id: userId, scopes, identityVerified, clientId } = ctx.auth;
       assertThat(
-        identityVerified,
-        new RequestError({ code: 'verification_record.permission_denied', status: 401 })
-      );
-      const { newIdentifierVerificationRecordId } = ctx.guard.body;
-      const { fields } = ctx.accountCenter;
-      assertThat(
-        fields.social === AccountCenterControlValue.Edit,
+        ctx.accountCenter.fields.social === AccountCenterControlValue.Edit,
         'account_center.field_not_editable'
       );
-
-      assertThat(scopes.has(UserScope.Identities), 'auth.unauthorized');
-
-      // Check new identifier
-      const newVerificationRecord = await buildVerificationRecordByIdAndType({
-        type: VerificationType.Social,
-        id: newIdentifierVerificationRecordId,
-        queries,
-        libraries,
-      });
-      assertThat(newVerificationRecord.isVerified, 'verification_record.not_found');
-
-      const {
-        socialIdentity: { target, userInfo },
-      } = await newVerificationRecord.toUserProfile();
-
-      await checkIdentifierCollision({ identity: { target, id: userInfo.id } }, userId);
+      assertThat(
+        scopes.has(UserScope.Identities),
+        new RequestError({ code: 'auth.unauthorized', status: 401 })
+      );
+      await assertFirstPartyClient(queries, clientId);
 
       const user = await findUserById(userId);
+      assertIdentityVerifiedIfRequired(user, identityVerified);
 
-      assertThat(!user.identities[target], 'user.identity_already_in_use');
-
-      const updatedUser = await updateUserById(userId, {
-        identities: {
-          ...user.identities,
-          [target]: {
-            userId: userInfo.id,
-            details: userInfo,
-          },
-        },
+      await linkSocialIdentityCore({
+        user,
+        newIdentifierVerificationRecordId: ctx.guard.body.newIdentifierVerificationRecordId,
+        allowReplace: false,
+        appendDataHookContext: ctx.appendDataHookContext,
+        getAppInsightsContext: () => buildAppInsightsTelemetry(ctx),
       });
-
-      ctx.appendDataHookContext('User.Data.Updated', { user: updatedUser });
-
-      const tokenSetSecret = await newVerificationRecord.getTokenSetSecret();
-
-      if (tokenSetSecret) {
-        // Upsert token set secret should not break the normal social link flow
-        await trySafe(
-          async () => upsertSocialTokenSetSecret(user.id, tokenSetSecret),
-          (error) => {
-            void appInsights.trackException(error, buildAppInsightsTelemetry(ctx));
-          }
-        );
-      }
-
       ctx.status = 204;
+      return next();
+    }
+  );
 
+  router.put(
+    `${accountApiPrefix}/identities`,
+    koaGuard({
+      body: z.object({
+        newIdentifierVerificationRecordId: z.string(),
+      }),
+      status: [204, 400, 401, 403, 422],
+    }),
+    async (ctx, next) => {
+      const { id: userId, scopes, identityVerified, clientId } = ctx.auth;
+      assertThat(
+        ctx.accountCenter.fields.social === AccountCenterControlValue.Edit,
+        'account_center.field_not_editable'
+      );
+      assertThat(
+        scopes.has(UserScope.Identities),
+        new RequestError({ code: 'auth.unauthorized', status: 401 })
+      );
+      await assertFirstPartyClient(queries, clientId);
+
+      const user = await findUserById(userId);
+      assertIdentityVerifiedIfRequired(user, identityVerified);
+
+      await linkSocialIdentityCore({
+        user,
+        newIdentifierVerificationRecordId: ctx.guard.body.newIdentifierVerificationRecordId,
+        allowReplace: true,
+        appendDataHookContext: ctx.appendDataHookContext,
+        getAppInsightsContext: () => buildAppInsightsTelemetry(ctx),
+      });
+      ctx.status = 204;
       return next();
     }
   );
@@ -104,14 +179,10 @@ export default function identitiesRoutes<T extends UserRouter>(
     `${accountApiPrefix}/identities/:target`,
     koaGuard({
       params: z.object({ target: z.string() }),
-      status: [204, 400, 401, 404],
+      status: [204, 400, 401, 403, 404, 422],
     }),
     async (ctx, next) => {
-      const { id: userId, scopes, identityVerified } = ctx.auth;
-      assertThat(
-        identityVerified,
-        new RequestError({ code: 'verification_record.permission_denied', status: 401 })
-      );
+      const { id: userId, scopes, identityVerified, clientId } = ctx.auth;
       const { target } = ctx.guard.params;
       const { fields } = ctx.accountCenter;
       assertThat(
@@ -120,11 +191,14 @@ export default function identitiesRoutes<T extends UserRouter>(
       );
 
       assertThat(scopes.has(UserScope.Identities), 'auth.unauthorized');
+      await assertFirstPartyClient(queries, clientId);
 
       const [user, ssoIdentities] = await Promise.all([
         findUserById(userId),
         userSsoIdentities.findUserSsoIdentitiesByUserId(userId),
       ]);
+      assertIdentityVerifiedIfRequired(user, identityVerified);
+
       assertCanDeleteSocialIdentity(user, target, ssoIdentities.length);
 
       const updatedUser = await deleteUserIdentity(userId, target);

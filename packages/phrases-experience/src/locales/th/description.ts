@@ -36,6 +36,8 @@ const description = {
   reset_password: 'รีเซ็ตรหัสผ่าน',
   reset_password_description:
     'กรอก {{types, list(type: disjunction;)}} ที่เชื่อมโยงกับบัญชีของคุณ แล้วเราจะส่งรหัสยืนยันเพื่อรีเซ็ตรหัสผ่าน',
+  reset_password_magic_link_description:
+    'ป้อนที่อยู่อีเมลที่เชื่อมโยงกับบัญชีของคุณเพื่อดำเนินการรีเซ็ตรหัสผ่านต่อ',
   new_password: 'รหัสผ่านใหม่',
   set_password: 'ตั้งรหัสผ่าน',
   password_changed: 'เปลี่ยนรหัสผ่านแล้ว',
@@ -46,6 +48,7 @@ const description = {
   enter_username: 'ตั้งชื่อผู้ใช้',
   enter_username_description:
     'ชื่อผู้ใช้สามารถใช้เข้าสู่ระบบแทนได้ ต้องประกอบด้วยตัวอักษร ตัวเลข และขีดล่างเท่านั้น',
+  enter_username_policy_description: 'ชื่อผู้ใช้สามารถใช้เข้าสู่ระบบแทนได้ {{requirements}}',
   link_email: 'เชื่อมโยงอีเมล',
   link_phone: 'เชื่อมโยงเบอร์โทรศัพท์',
   link_email_or_phone: 'เชื่อมโยงอีเมลหรือเบอร์โทรศัพท์',
@@ -83,12 +86,25 @@ const description = {
     character_types_other:
       'ต้องมีอย่างน้อย {{count}} ประเภทในตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก ตัวเลข และสัญลักษณ์',
   },
+  username_requirements: 'ชื่อผู้ใช้{{items, list}}',
+  username_requirement: {
+    length: 'ต้องมี {{min}} ถึง {{max}} อักขระ',
+    characters: 'มีได้เฉพาะ {{characters, list}} เท่านั้น',
+  },
+  username_character: {
+    uppercase: 'ตัวพิมพ์ใหญ่',
+    lowercase: 'ตัวพิมพ์เล็ก',
+    number: 'ตัวเลข',
+    underscore: 'ขีดล่าง',
+  },
   use: 'ใช้',
   single_sign_on_email_form: 'กรอกอีเมลบริษัทของคุณ',
   single_sign_on_connectors_list:
     'องค์กรของคุณได้เปิดใช้งาน Single Sign-On สำหรับอีเมล {{email}} คุณสามารถเข้าสู่ระบบผ่าน SSO ด้านล่างนี้',
   single_sign_on_enabled: 'บัญชีนี้เปิดใช้งาน Single Sign-On แล้ว',
   authorize_title: 'อนุมัติ {{name}}',
+  unregistered_client_notice:
+    'แอปนี้ประกาศตัวเองโดย <hostname>{{host}}</hostname> รวมถึงชื่อและโลโก้ โปรดตรวจสอบชื่อโฮสต์ก่อนดำเนินการต่อ',
   request_permission: '{{name}} กำลังขอสิทธิ์เข้าถึง:',
   grant_organization_access: 'ให้สิทธิ์เข้าถึงองค์กร:',
   authorize_personal_data_usage: 'อนุญาตให้ใช้ข้อมูลส่วนตัวของคุณ:',
@@ -105,6 +121,8 @@ const description = {
   all_sign_in_options: 'ตัวเลือกการเข้าสู่ระบบทั้งหมด',
   identifier_register_description: 'กรอก {{types, list(type: disjunction;)}} เพื่อสร้างบัญชีใหม่',
   all_account_creation_options: 'ตัวเลือกการสร้างบัญชีทั้งหมด',
+  password_expired: 'รหัสผ่านของคุณหมดอายุแล้วและต้องรีเซ็ตก่อนจึงจะสามารถลงชื่อเข้าใช้ได้',
+  password_expiration_reset: 'รีเซ็ตรหัสผ่าน',
   back_to_sign_in: 'กลับไปหน้าเข้าสู่ระบบ',
   support_email: 'อีเมลติดต่อ: <link></link>',
   support_website: 'เว็บไซต์สนับสนุน: <link></link>',

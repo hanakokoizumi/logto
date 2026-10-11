@@ -85,12 +85,14 @@ const sign_in_exp = {
     title: 'Interfaz personalizada',
     cloud_tag: 'Cloud',
     css_code_editor_title: 'CSS personalizado',
+    css_code_editor_field_title: 'Sobrescritura de CSS',
     css_code_editor_description1: 'Vea el ejemplo de CSS personalizado.',
     css_code_editor_description2: '<a>{{link}}</a>',
     css_code_editor_description_link_content: 'Aprende más',
     css_code_editor_content_placeholder:
-      'Introduce tu CSS personalizado para adaptar los estilos de cualquier cosa a tus especificaciones exactas. Expresa tu creatividad y haz que tu interfaz de usuario destaque.',
+      'Introduce aquí tus overrides de CSS para ajustar los estilos de cualquier elemento exactamente a tus necesidades. Expresa tu creatividad y haz que tu UI destaque.',
     bring_your_ui_title: 'Trae tu interfaz de usuario',
+    bring_your_ui_upload_title: 'Subir activos de UI personalizados',
     bring_your_ui_description:
       'Sube un paquete comprimido (.zip) para reemplazar la interfaz de usuario preconstruida de Logto con tu propio código. <a>Aprende más</a>',
     bring_your_ui_oss_description:
@@ -100,6 +102,17 @@ const sign_in_exp = {
     bring_your_ui_oss_try_cloud: 'Probar Cloud',
     preview_with_bring_your_ui_description:
       'Tus activos de la interfaz de usuario personalizada se han subido con éxito y ahora se están sirviendo. En consecuencia, la ventana de vista previa incorporada se ha deshabilitado.\nPara probar tu interfaz de inicio de sesión personalizada, haz clic en el botón "Vista previa en vivo" para abrirla en una nueva pestaña del navegador.',
+    csp_description:
+      'Permite expresiones de origen adicionales para tu interfaz de inicio de sesión personalizada. Estos valores se aplican solo cuando se sirven los activos de la UI personalizada.',
+    csp_script_src: 'script-src permitido',
+    csp_script_src_tip:
+      'Permite expresiones de origen HTTPS para los scripts cargados por tu UI personalizada, como https://scripts.example.com o https://*.example.com.',
+    csp_connect_src: 'connect-src permitido',
+    csp_connect_src_tip:
+      'Permite expresiones de origen HTTPS o WSS para las solicitudes de red realizadas por tu UI personalizada, como https://api.example.com o wss://events.example.com.',
+    csp_source_invalid_error:
+      'Introduce una expresión de origen válida. Usa URLs https://; connect-src también admite wss://. Las palabras clave de CSP y los puntos y coma no son compatibles.',
+    csp_source_duplicate_error: 'Esta expresión de origen ya está en la lista.',
   },
   account_center: {
     title: 'CENTRO DE CUENTAS',
@@ -168,6 +181,7 @@ const sign_in_exp = {
       mfa: 'Autenticación multifactor',
       mfa_description:
         'Permite que los usuarios gestionen sus métodos MFA desde el centro de cuentas.',
+      passkey: 'Passkey',
       username: 'Nombre de usuario',
       name: 'Nombre',
       avatar: 'Avatar',
@@ -177,6 +191,25 @@ const sign_in_exp = {
       custom_data_description:
         'Controla el acceso a los datos JSON personalizados almacenados en el usuario.',
       sessions: 'Sesiones',
+      trusted_devices: 'Dispositivos de confianza',
+    },
+    profile_fields: {
+      title: 'Campos de perfil para el centro de cuenta prediseñado',
+      add_profile_fields: 'Agregar campos de perfil',
+      hint: {
+        not_in_list: '¿No está en la lista?',
+        set_up: 'Configurar',
+        go_to: 'otros campos de perfil ahora.',
+      },
+      disabled_hint: {
+        name: 'Para agregar este campo, primero establece el permiso "Nombre" en "Editar/Solo lectura" en la sección Perfil de usuario abajo.',
+        avatar:
+          'Para agregar este campo, primero establece el permiso "Avatar" en "Editar/Solo lectura" en la sección Perfil de usuario abajo.',
+        profile:
+          'Para agregar este campo, primero establece el permiso "Perfil" en "Editar/Solo lectura" en la sección Perfil de usuario abajo.',
+        custom_data:
+          'Para agregar este campo, primero establece el permiso "Datos personalizados" en "Editar/Solo lectura" en la sección Perfil de usuario abajo.',
+      },
     },
     webauthn_related_origins: 'Orígenes relacionados con WebAuthn',
     webauthn_related_origins_description:
@@ -206,6 +239,7 @@ const sign_in_exp = {
         username: 'Actualizar tu nombre de usuario',
         password: 'Establecer una nueva contraseña',
         social: 'Vincula una cuenta social para iniciar sesión',
+        social_change: 'Cambia a otra cuenta social vinculada',
         social_remove: 'Elimina una cuenta social vinculada',
         authenticator_app:
           'Configura una nueva aplicación de autenticación para la autenticación multifactorial',
@@ -216,6 +250,9 @@ const sign_in_exp = {
         backup_codes_manage: 'Ver tus códigos de respaldo disponibles o generar nuevos',
         account_center:
           'Accede al centro de cuentas para gestionar la configuración de seguridad como correo electrónico, teléfono, nombre de usuario, contraseña, MFA y cuentas conectadas',
+        profile:
+          'El centro principal para gestionar tu información personal (por ejemplo, nombre, avatar)',
+        sessions: 'Ver y gestionar tus sesiones activas en todos los dispositivos',
       },
       customize_note: '¿No quieres la experiencia predefinida? Puedes',
       customize_link: 'personalizar totalmente tus flujos con la Account API.',

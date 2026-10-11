@@ -10,6 +10,10 @@ import TextLink from '@/ds-components/TextLink';
 import useDocumentationUrl from '@/hooks/use-documentation-url';
 import useUserPreferences from '@/hooks/use-user-preferences';
 
+import type { AccountCenterFormValues, SignInExperienceForm } from '../../../types';
+import { collectUserProfilePathname } from '../../CollectUserProfile/consts';
+import ProfileFieldsEditBox from '../../components/ProfileFieldsEditBox';
+
 import PrebuiltUiUrlItem from './PrebuiltUiUrlItem';
 import styles from './index.module.scss';
 
@@ -60,18 +64,37 @@ const prebuiltRoutes = [
     isPreviewHidden: true,
   },
   {
+    path: '/account/social/:connectorId/change',
+    tooltipKey: 'sign_in_exp.account_center.prebuilt_ui.tooltips.social_change',
+    isPreviewHidden: true,
+  },
+  {
     path: '/account/social/:connectorId/remove',
     tooltipKey: 'sign_in_exp.account_center.prebuilt_ui.tooltips.social_remove',
     isPreviewHidden: true,
   },
 ] as const satisfies readonly PrebuiltRoute[];
 
-const accountCenterRoute = {
-  path: '/account/security',
-  tooltipKey: 'sign_in_exp.account_center.prebuilt_ui.tooltips.account_center',
-} as const;
+const accountCenterRoutes = [
+  {
+    path: '/account/security',
+    tooltipKey: 'sign_in_exp.account_center.prebuilt_ui.tooltips.account_center',
+  },
+  {
+    path: '/account/profile',
+    tooltipKey: 'sign_in_exp.account_center.prebuilt_ui.tooltips.profile',
+  },
+  {
+    path: '/account/sessions',
+    tooltipKey: 'sign_in_exp.account_center.prebuilt_ui.tooltips.sessions',
+  },
+] as const satisfies ReadonlyArray<{ path: string; tooltipKey: string }>;
 
-function IntegratePrebuiltUi() {
+type Props = {
+  readonly getProfileFieldDisabledReason?: (fieldName: string) => string | undefined;
+};
+
+function IntegratePrebuiltUi({ getProfileFieldDisabledReason }: Props) {
   const { t } = useTranslation(undefined, { keyPrefix: 'admin_console' });
   const { tenantEndpoint } = useContext(AppDataContext);
   const { getDocumentationUrl } = useDocumentationUrl();
@@ -113,11 +136,14 @@ function IntegratePrebuiltUi() {
             <DynamicT forKey="sign_in_exp.account_center.prebuilt_ui.account_center_description" />
           </div>
           <div className={styles.urlGrid}>
-            <PrebuiltUiUrlItem
-              path={accountCenterRoute.path}
-              tooltip={t(accountCenterRoute.tooltipKey)}
-              tenantEndpoint={tenantEndpoint}
-            />
+            {accountCenterRoutes.map((route) => (
+              <PrebuiltUiUrlItem
+                key={route.path}
+                path={route.path}
+                tooltip={t(route.tooltipKey)}
+                tenantEndpoint={tenantEndpoint}
+              />
+            ))}
           </div>
         </FormField>
         <FormField
@@ -139,6 +165,25 @@ function IntegratePrebuiltUi() {
               />
             ))}
           </div>
+        </FormField>
+        <FormField title="sign_in_exp.account_center.profile_fields.title" headlineSpacing="large">
+          <ProfileFieldsEditBox<
+            SignInExperienceForm & { accountCenter: AccountCenterFormValues },
+            'accountCenter.profileFields'
+          >
+            name="accountCenter.profileFields"
+            addProfileFieldsButtonTitle="sign_in_exp.account_center.profile_fields.add_profile_fields"
+            getFieldDisabledReason={getProfileFieldDisabledReason}
+            hint={
+              <>
+                {t('sign_in_exp.account_center.profile_fields.hint.not_in_list')}
+                <TextLink to={collectUserProfilePathname}>
+                  {t('sign_in_exp.account_center.profile_fields.hint.set_up')}
+                </TextLink>
+                {t('sign_in_exp.account_center.profile_fields.hint.go_to')}
+              </>
+            }
+          />
         </FormField>
         <div className={styles.customizeNote}>
           <DynamicT forKey="sign_in_exp.account_center.prebuilt_ui.customize_note" />

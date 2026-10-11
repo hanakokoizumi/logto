@@ -36,6 +36,8 @@ const description = {
   reset_password: 'Забыли пароль',
   reset_password_description:
     'Введите {{types, list(type: disjunction;)}} от вашей учетной записи, и мы вышлем вам код для восстановления пароля.',
+  reset_password_magic_link_description:
+    'Введите адрес электронной почты, связанный с вашей учетной записью, чтобы продолжить сброс пароля.',
   new_password: 'Новый пароль',
   set_password: 'Задать пароль',
   password_changed: 'Пароль изменен',
@@ -46,6 +48,8 @@ const description = {
   enter_username: 'Установить имя пользователя',
   enter_username_description:
     'Имя пользователя является альтернативой для входа в систему. Имя пользователя должно содержать только буквы, цифры и символы подчеркивания.',
+  enter_username_policy_description:
+    'Имя пользователя является альтернативой для входа в систему. {{requirements}}',
   link_email: 'Привязать почту',
   link_phone: 'Привязать номер телефона',
   link_email_or_phone: 'Привязать почту или номер телефона',
@@ -86,12 +90,25 @@ const description = {
     character_types_other:
       'должен содержать по крайней мере {{count}} типа прописных букв, строчных букв, цифр и символов',
   },
+  username_requirements: 'Имя пользователя {{items, list}}.',
+  username_requirement: {
+    length: 'должно содержать от {{min}} до {{max}} символов',
+    characters: 'может содержать только {{characters, list}}',
+  },
+  username_character: {
+    uppercase: 'прописные буквы',
+    lowercase: 'строчные буквы',
+    number: 'цифры',
+    underscore: 'подчёркивания',
+  },
   use: 'Использовать',
   single_sign_on_email_form: 'Введите корпоративный адрес электронной почты',
   single_sign_on_connectors_list:
     'Ваше предприятие включило функцию единого входа для электронной почты {{email}}. Вы можете продолжить вход в систему с помощью следующих провайдеров SSO.',
   single_sign_on_enabled: 'Единый вход в систему включен для этой учетной записи',
   authorize_title: 'Авторизовать {{name}}',
+  unregistered_client_notice:
+    'Это приложение самозаявлено доменом <hostname>{{host}}</hostname>, включая его название и логотип. Проверьте имя хоста, прежде чем продолжить.',
   request_permission: '{{name}} запрашивает доступ к:',
   grant_organization_access: 'Предоставить доступ организации:',
   authorize_personal_data_usage: 'Авторизовать использование ваших личных данных:',
@@ -109,6 +126,8 @@ const description = {
   identifier_register_description:
     'Введите свои {{types, list(type: disjunction;)}} чтобы создать новую учётную запись.',
   all_account_creation_options: 'Все варианты создания учётной записи',
+  password_expired: 'Срок действия вашего пароля истек, и его необходимо сбросить перед входом.',
+  password_expiration_reset: 'Сбросить пароль',
   back_to_sign_in: 'Вернуться ко входу',
   support_email: 'Поддержка по электронной почте: <link></link>',
   support_website: 'Сайт поддержки: <link></link>',

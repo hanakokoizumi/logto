@@ -22,6 +22,7 @@ export const userInfoSelectFields = Object.freeze([
   'updatedAt',
   'profile',
   'applicationId',
+  'cimdClientId',
   'isSuspended',
 ] satisfies Array<keyof User>);
 
@@ -37,6 +38,7 @@ export type UserInfo = z.infer<typeof userInfoGuard>;
 
 export const userProfileResponseGuard = userInfoGuard.extend({
   hasPassword: z.boolean().optional(),
+  hasSecurityVerificationMethod: z.boolean().optional(),
   ssoIdentities: z.array(UserSsoIdentities.guard).optional(),
 });
 

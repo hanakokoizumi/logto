@@ -144,6 +144,13 @@ export enum UserScope {
    * Not included in user claims, even when the scope is requested, as it's not meant for ID token or userinfo endpoint.
    */
   Sessions = 'urn:logto:scope:sessions',
+  /**
+   * Scope for user's trusted devices.
+   *
+   * Only used for trusted-device management via account API.
+   * Not included in user claims, even when the scope is requested, as it's not meant for ID token or userinfo endpoint.
+   */
+  TrustedDevices = 'urn:logto:scope:trusted_devices',
 }
 
 /**
@@ -186,6 +193,7 @@ export const idTokenClaims: Readonly<Record<UserScope, UserClaim[]>> = Object.fr
   [UserScope.CustomData]: [],
   [UserScope.Identities]: [],
   [UserScope.Sessions]: [],
+  [UserScope.TrustedDevices]: [],
 });
 
 /**
@@ -205,6 +213,14 @@ export const extendedIdTokenClaimsByScope: Readonly<
   [UserScope.Organizations]: ['organizations', 'organization_data'],
   [UserScope.OrganizationRoles]: ['organization_roles'],
 });
+
+export const protectedAppAdditionalScopes = [
+  UserScope.CustomData,
+  UserScope.Identities,
+  UserScope.Roles,
+  UserScope.Organizations,
+  UserScope.OrganizationRoles,
+] as const satisfies ReadonlyArray<keyof typeof extendedIdTokenClaimsByScope>;
 
 /**
  * All possible claims for each scope, combining base ID token claims and extended claims.

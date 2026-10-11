@@ -31,7 +31,10 @@ export type ExperienceSocialConnector = Omit<
   'description' | 'configTemplate' | 'formItems' | 'readme' | 'customData'
 >;
 
-export type FullSignInExperience = Omit<SignInExperience, 'forgotPasswordMethods'> & {
+export type FullSignInExperience = Omit<
+  SignInExperience,
+  'emailBlocklistPolicy' | 'forgotPasswordMethods'
+> & {
   socialConnectors: ExperienceSocialConnector[];
   ssoConnectors: SsoConnectorMetadata[];
   forgotPassword: ForgotPassword;
@@ -48,14 +51,24 @@ export type FullSignInExperience = Omit<SignInExperience, 'forgotPasswordMethods
   captchaConfig?: {
     type: CaptchaType;
     siteKey: string;
+    /** The Cap Standalone instance URL, only available for {@link CaptchaType.Cap}. */
+    endpoint?: string;
     domain?: string;
     mode?: RecaptchaEnterpriseMode;
   };
+  /**
+   * Custom profile fields selected for the sign-up (Collect user profile) flow.
+   */
   customProfileFields?: Readonly<CustomProfileField[]>;
+  /**
+   * Full custom profile field catalog used to resolve field metadata (for example `required`
+   * and `type`) outside the sign-up field list, such as the account center profile page.
+   */
+  customProfileFieldCatalog?: Readonly<CustomProfileField[]>;
 };
 
 export const fullSignInExperienceGuard = SignInExperiences.guard
-  .omit({ forgotPasswordMethods: true })
+  .omit({ emailBlocklistPolicy: true, forgotPasswordMethods: true })
   .extend({
     socialConnectors: connectorMetadataGuard
       .omit({
@@ -76,9 +89,11 @@ export const fullSignInExperienceGuard = SignInExperiences.guard
       .object({
         type: z.nativeEnum(CaptchaType),
         siteKey: z.string(),
+        endpoint: z.string().optional(),
         domain: z.string().optional(),
         mode: z.nativeEnum(RecaptchaEnterpriseMode).optional(),
       })
       .optional(),
     customProfileFields: CustomProfileFields.guard.array(),
+    customProfileFieldCatalog: CustomProfileFields.guard.array().optional(),
   }) satisfies ToZodObject<FullSignInExperience>;

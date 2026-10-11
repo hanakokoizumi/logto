@@ -19,6 +19,14 @@ const user_details = {
     new_password: 'Nova senha:',
     password: 'Senha:',
   },
+  expire_password: {
+    button: 'Expirar',
+    title: 'Tem certeza de que deseja expirar esta senha?',
+    content:
+      'O usuário será solicitado a redefinir sua senha no próximo login. Esta ação não pode ser desfeita.',
+    success: 'A senha do usuário foi marcada como expirada.',
+    not_enabled_tooltip: 'A política de expiração de senha não está ativada.',
+  },
   tab_settings: 'Configurações',
   tab_roles: 'Papéis de usuário',
   tab_logs: 'Registros',
@@ -175,7 +183,7 @@ const user_details = {
     access_created_at_column: 'Acesso criado em',
     revoke_access_title: 'Revogar acesso?',
     revoke_access_description:
-      'Isso revogará o acesso do aplicativo à conta deste usuário em todos os dispositivos. O usuário precisará autorizar novamente para restaurar o acesso.',
+      'Isso revogará o acesso do aplicativo à conta deste usuário em todos os dispositivos. O usuário precisará autorizar novamente para restaurar o acesso. Os tokens de acesso emitidos anteriormente podem permanecer válidos até expirarem.',
   },
   connections: {
     title: 'Conexão',

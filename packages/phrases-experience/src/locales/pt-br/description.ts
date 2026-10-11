@@ -36,6 +36,8 @@ const description = {
   reset_password: 'Esqueceu a senha',
   reset_password_description:
     'Digite o {{types, list(type: disjunction;)}} à sua conta e enviaremos a você o código de verificação para redefinir sua senha.',
+  reset_password_magic_link_description:
+    'Insira o endereço de e-mail associado à sua conta para continuar redefinindo sua senha.',
   new_password: 'Nova senha',
   set_password: 'Configurar senha',
   password_changed: 'Senha alterada',
@@ -46,6 +48,8 @@ const description = {
   enter_username: 'Definir nome de usuário',
   enter_username_description:
     'O nome de usuário é uma alternativa para fazer login. O nome de usuário deve conter apenas letras, números e sublinhados.',
+  enter_username_policy_description:
+    'O nome de usuário é uma alternativa para fazer login. {{requirements}}',
   link_email: 'Linkar e-mail',
   link_phone: 'Linkar telefone',
   link_email_or_phone: 'Linkar e-mail ou telefone',
@@ -82,12 +86,25 @@ const description = {
     character_types_other:
       'deve conter pelo menos {{count}} tipos de letra maiúscula, letra minúscula, dígito e símbolo.',
   },
+  username_requirements: 'Nome de usuário {{items, list}}.',
+  username_requirement: {
+    length: 'deve ter de {{min}} a {{max}} caracteres',
+    characters: 'pode conter apenas {{characters, list}}',
+  },
+  username_character: {
+    uppercase: 'letras maiúsculas',
+    lowercase: 'letras minúsculas',
+    number: 'números',
+    underscore: 'sublinhados',
+  },
   use: 'Usar',
   single_sign_on_email_form: 'Insira o endereço de e-mail corporativo',
   single_sign_on_connectors_list:
     'Sua empresa ativou o Single Sign-On para a conta de email {{email}}. Você pode continuar a fazer login com os seguintes provedores de SSO.',
   single_sign_on_enabled: 'Esta conta tem Single Sign-On ativado.',
   authorize_title: 'Autorizar {{name}}',
+  unregistered_client_notice:
+    'Este app é autodeclarado por <hostname>{{host}}</hostname>, incluindo seu nome e logotipo. Verifique o nome do host antes de continuar.',
   request_permission: '{{name}} está solicitando acesso a:',
   grant_organization_access: 'Conceder acesso à organização:',
   authorize_personal_data_usage: 'Autorizar o uso dos seus dados pessoais:',
@@ -105,6 +122,8 @@ const description = {
   identifier_register_description:
     'Digite seu {{types, list(type: disjunction;)}} para criar uma nova conta.',
   all_account_creation_options: 'Todas as opções de criação de conta',
+  password_expired: 'Sua senha expirou e deve ser redefinida antes que você possa fazer login.',
+  password_expiration_reset: 'Redefinir senha',
   back_to_sign_in: 'Voltar para o login',
   support_email: 'E-mail de suporte: <link></link>',
   support_website: 'Site de suporte: <link></link>',

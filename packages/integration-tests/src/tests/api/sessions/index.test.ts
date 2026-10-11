@@ -9,6 +9,7 @@ import {
   getUserSessions,
   revokeUserGrant,
   revokeUserSession,
+  suspendUser,
 } from '#src/api/index.js';
 import { signInWithPassword } from '#src/helpers/experience/index.js';
 import { expectRejects } from '#src/helpers/index.js';
@@ -74,6 +75,27 @@ describe('Sessions API', () => {
     const { sessions: sessionsAfterRevoke } = await getUserSessions(user.id);
     expect(sessionsAfterRevoke).toHaveLength(1);
     expect(sessionsAfterRevoke[0]!.payload.uid).toBe(sessions[1]!.payload.uid);
+  });
+
+  it('admin sessions response does not include the account-only `isCurrent` field', async () => {
+    await enableAllPasswordSignInMethods();
+
+    const { username, password } = generateNewUserProfile({ username: true, password: true });
+    const user = await userApi.create({ username, password });
+
+    await signInWithPassword({
+      identifier: {
+        type: SignInIdentifier.Username,
+        value: username,
+      },
+      password,
+    });
+
+    const { sessions } = await getUserSessions(user.id);
+    expect(sessions.length).toBeGreaterThan(0);
+    for (const session of sessions) {
+      expect(session).not.toHaveProperty('isCurrent');
+    }
   });
 
   it('should get a single user session by session id', async () => {
@@ -316,6 +338,35 @@ describe('Sessions API', () => {
     const { sessions } = await getUserSessions(user.id);
     const appSession = findSessionByAppId(sessions, app.id);
     expect(appSession).toBeUndefined();
+
+    await deleteApplication(app.id);
+  });
+
+  it('should revoke user sessions and refresh tokens when the user is suspended', async () => {
+    await enableAllPasswordSignInMethods();
+
+    const { username, password } = generateNewUserProfile({ username: true, password: true });
+    const user = await userApi.create({ username, password });
+
+    const { app, refreshToken } = await createAppAndSignInWithPassword({
+      username,
+      password,
+    });
+
+    assert(refreshToken, new Error('No refresh token found'));
+
+    const { sessions } = await getUserSessions(user.id);
+    expect(findSessionByAppId(sessions, app.id)).toBeTruthy();
+
+    await suspendUser(user.id, true);
+
+    const { sessions: sessionsAfterSuspension } = await getUserSessions(user.id);
+    expect(sessionsAfterSuspension).toHaveLength(0);
+
+    await assertRefreshTokenInvalidGrant({
+      clientId: app.id,
+      refreshToken,
+    });
 
     await deleteApplication(app.id);
   });

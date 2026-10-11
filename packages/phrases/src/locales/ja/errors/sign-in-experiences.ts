@@ -39,6 +39,14 @@ const sign_in_experiences = {
     '無効なカスタムメールブロックリスト項目: {{items, list(type:conjunction)}} 。各項目は有効なメールアドレスまたはメールドメインである必要があります。例: foo@example.com または @example.com 。',
   forgot_password_method_requires_connector:
     'パスワード忘れの方法には、対応する {{method}} コネクタの構成が必要です。',
+  password_expiration_requires_forgot_password:
+    'パスワードの有効期限を有効にするには、有効なコネクタを持つ「パスワードを忘れた場合」方法が少なくとも 1 つ必要です。',
+  password_expiration_not_enabled:
+    'パスワードの有効期限ポリシーが有効になっていません。パスワードを期限切れにする前に、サインイン体験の設定で有効にしてください。',
+  password_expiration_invalid_period_days:
+    'パスワード有効期限が有効な場合、有効期間の日数は正の整数である必要があります。',
+  username_policy_case_conflicts_exist:
+    'ユーザー名が大文字と小文字のみで異なる場合、ケースに依存しないユーザー名に切り替えることはできません。競合を解決してからもう一度お試しください。',
 };
 
 export default Object.freeze(sign_in_experiences);

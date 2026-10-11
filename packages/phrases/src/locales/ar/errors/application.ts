@@ -24,6 +24,7 @@ const application = {
   should_delete_custom_domains_first: 'يجب حذف النطاقات المخصصة أولاً.',
   no_legacy_secret_found: 'لا يحتوي التطبيق على سر تراثي.',
   secret_name_exists: 'اسم السر موجود بالفعل.',
+  sync_application_secret_failed: 'فشلت مزامنة سر التطبيق.',
   saml: {
     use_saml_app_api:
       'استخدم واجهة برمجة التطبيقات `[METHOD] /saml-applications(/.*)?` لتشغيل تطبيق SAML.',
@@ -31,6 +32,8 @@ const application = {
     reach_oss_limit:
       'لا يمكنك إنشاء المزيد من تطبيقات SAML لأن الحد الأقصى {{limit}} تم الوصول إليه.',
     acs_url_binding_not_supported: 'يدعم فقط التوزيع HTTP-POST لاستقبال إقرارات SAML.',
+    acs_url_scheme_not_supported:
+      'يتم دعم مخططي HTTP و HTTPS فقط لعنوان URL الخاص بخدمة استهلاك التأكيد (ACS).',
     can_not_delete_active_secret: 'لا يمكن حذف السر النشط.',
     no_active_secret: 'لم يتم العثور على سر نشط.',
     entity_id_required: 'معرف الكيان مطلوب لإنشاء بيانات وصفية.',

@@ -9,8 +9,8 @@ const user_scopes = {
     'urn:logto:scope:organizations': '你的組織資訊',
     'urn:logto:scope:organization_roles': '你的組織角色',
     address: '你的地址',
-    /** UNTRANSLATED */
-    'urn:logto:scope:sessions': 'Your active sessions',
+    'urn:logto:scope:sessions': '你的有效會話',
+    'urn:logto:scope:trusted_devices': '你的受信任裝置',
   },
 };
 

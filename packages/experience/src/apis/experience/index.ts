@@ -24,12 +24,15 @@ export {
   submitInteraction,
   identifyUser,
   identifyAndSubmitInteraction,
+  setTrustedDeviceOptInDecision,
 } from './interaction';
 
+export * from './avatar';
 export * from './mfa';
 export * from './social';
 export * from './one-time-token';
 export * from './passkey-sign-in';
+export * from './step-up';
 
 /**
  * For sign-in flow user identity not found error handling use.
@@ -125,7 +128,7 @@ export const identifyWithVerificationCode = async (json: VerificationCodePayload
 
 // Profile APIs
 
-export const updateProfileWithVerificationCode = async (
+export const verifyAndUpdateProfileWithVerificationCode = async (
   json: VerificationCodePayload,
   interactionEvent?: ContinueFlowInteractionEvent
 ) => {
@@ -143,6 +146,13 @@ export const updateProfileWithVerificationCode = async (
   if (interactionEvent === InteractionEvent.Register) {
     await identifyUser();
   }
+};
+
+export const updateProfileWithVerificationCode = async (
+  json: VerificationCodePayload,
+  interactionEvent?: ContinueFlowInteractionEvent
+) => {
+  await verifyAndUpdateProfileWithVerificationCode(json, interactionEvent);
 
   return submitInteraction();
 };

@@ -21,6 +21,14 @@ const user_details = {
     new_password: 'Neues Passwort:',
     password: 'Passwort:',
   },
+  expire_password: {
+    button: 'Ablaufen lassen',
+    title: 'Sind Sie sicher, dass dieses Passwort ablaufen soll?',
+    content:
+      'Der Benutzer wird aufgefordert, sein Passwort beim nächsten Login zurückzusetzen. Diese Aktion kann nicht rückgängig gemacht werden.',
+    success: 'Das Passwort des Benutzers wurde als abgelaufen markiert.',
+    not_enabled_tooltip: 'Die Passwort-Ablaufrichtlinie ist nicht aktiviert.',
+  },
   tab_settings: 'Einstellungen',
   tab_roles: 'Benutzerrollen',
   tab_logs: 'Benutzer-Logs',
@@ -178,7 +186,7 @@ const user_details = {
     access_created_at_column: 'Zugriff erstellt am',
     revoke_access_title: 'Zugriff widerrufen?',
     revoke_access_description:
-      'Dadurch wird der Zugriff der App auf das Konto dieses Benutzers auf allen Geräten widerrufen. Der Benutzer muss die App erneut autorisieren, um den Zugriff wiederherzustellen.',
+      'Dadurch wird der Zugriff der App auf das Konto dieses Benutzers auf allen Geräten widerrufen. Der Benutzer muss die App erneut autorisieren, um den Zugriff wiederherzustellen. Bereits ausgestellte Zugriffstokens können bis zu ihrem Ablauf gültig bleiben.',
   },
   connections: {
     title: 'Verbindung',

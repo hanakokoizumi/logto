@@ -13,6 +13,12 @@ const error = {
   username_should_not_start_with_tg_prefix:
     'Username must not start with "tg_" (case-insensitive).',
   username_invalid_charset: 'Username should only contain letters, numbers, or underscores.',
+  username_too_short: 'Username must be at least {{min}} characters long.',
+  username_too_long: 'Username must be at most {{max}} characters long.',
+  username_uppercase_not_allowed: 'Uppercase letters are not allowed in usernames.',
+  username_lowercase_not_allowed: 'Lowercase letters are not allowed in usernames.',
+  username_numbers_not_allowed: 'Numbers are not allowed in usernames.',
+  username_underscore_not_allowed: 'Underscores are not allowed in usernames.',
   invalid_email: 'The email is invalid',
   invalid_phone: 'The phone number is invalid',
   passwords_do_not_match: 'Your passwords don’t match.',
@@ -30,9 +36,18 @@ const error = {
   invalid_link: 'Invalid link',
   invalid_link_description: 'Your one-time token may have expired or is no longer valid.',
   captcha_verification_failed: 'Failed to perform captcha verification.',
+  send_verification_code_failed: 'Failed to send the verification code. Please try again later.',
+  send_verification_code_failed_use_password:
+    'Failed to send the verification code. Please sign in with your password instead.',
   terms_acceptance_required: 'Terms acceptance required',
   terms_acceptance_required_description: 'You must agree to the terms to continue.',
   something_went_wrong: 'Something went wrong',
+  account_suspended: 'Account suspended',
+  account_suspended_description:
+    'This account has been suspended. Please contact the administrator for assistance.',
+  access_denied: 'Access denied',
+  application_access_denied:
+    'You do not have permission to access this application.\nPlease contact your administrator for assistance.',
   feature_not_enabled:
     'You do not have permission to access this feature. Please contact your administrator for assistance.',
 };

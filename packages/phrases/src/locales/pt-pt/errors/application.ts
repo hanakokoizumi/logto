@@ -25,12 +25,15 @@ const application = {
   should_delete_custom_domains_first: 'Deve eliminar primeiro os domínios personalizados.',
   no_legacy_secret_found: 'A aplicação não tem um segredo legado.',
   secret_name_exists: 'O nome do segredo já existe.',
+  sync_application_secret_failed: 'Falha ao sincronizar o segredo da aplicação.',
   saml: {
     use_saml_app_api: 'Use a API `[METHOD] /saml-applications(/.*)?` para operar a app SAML.',
     saml_application_only: 'A API está disponível apenas para aplicações SAML.',
     reach_oss_limit: 'NÃO PODE criar mais apps SAML, pois o limite de {{limit}} foi atingido.',
     acs_url_binding_not_supported:
       'Apenas a ligação HTTP-POST é suportada para receber assertivas SAML.',
+    acs_url_scheme_not_supported:
+      'Apenas os esquemas HTTP e HTTPS são suportados para o URL do Assertion Consumer Service.',
     can_not_delete_active_secret: 'Não é possível eliminar o segredo ativo.',
     no_active_secret: 'Nenhum segredo ativo encontrado.',
     entity_id_required: 'O ID da Entidade é necessário para gerar metadados.',

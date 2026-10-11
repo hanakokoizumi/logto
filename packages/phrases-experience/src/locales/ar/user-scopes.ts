@@ -9,8 +9,8 @@ const user_scopes = {
     'urn:logto:scope:organizations': 'معلومات منظماتك',
     'urn:logto:scope:organization_roles': 'أدوار المنظمة الخاصة بك',
     address: 'عنوانك',
-    /** UNTRANSLATED */
-    'urn:logto:scope:sessions': 'Your active sessions',
+    'urn:logto:scope:sessions': 'جلساتك النشطة',
+    'urn:logto:scope:trusted_devices': 'أجهزتك الموثوقة',
   },
 };
 

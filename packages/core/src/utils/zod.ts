@@ -22,6 +22,7 @@ import {
   ZodUnknown,
   ZodDefault,
   ZodIntersection,
+  ZodUndefined,
 } from 'zod';
 
 import RequestError from '#src/errors/RequestError/index.js';
@@ -152,6 +153,7 @@ export const zodTypeToSwagger = (
     return {
       type: 'object',
       description: 'arbitrary',
+      additionalProperties: true,
     };
   }
 
@@ -162,6 +164,7 @@ export const zodTypeToSwagger = (
         {
           type: 'object',
           description: 'arbitrary JSON object',
+          additionalProperties: true,
         },
         {
           type: 'array',
@@ -178,6 +181,7 @@ export const zodTypeToSwagger = (
               {
                 type: 'object',
                 description: 'arbitrary JSON object',
+                additionalProperties: true,
               },
             ],
           },
@@ -269,9 +273,11 @@ export const zodTypeToSwagger = (
   }
 
   if (config instanceof ZodObject) {
-    // Type from Zod is any
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const entries = Object.entries(config.shape);
+    // Undefined-only properties cannot appear in JSON payloads.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- ZodObject exposes its shape as any.
+    const entries = Object.entries(config.shape).filter(
+      ([, value]) => !(value instanceof ZodUndefined)
+    );
     const required = entries
       .filter(([, value]) => !(value instanceof ZodOptional))
       .map(([key]) => key);
@@ -321,17 +327,16 @@ export const zodTypeToSwagger = (
   }
 
   if (config instanceof ZodEffects) {
-    if (config._def.effect.type === 'transform') {
+    if (config._def.effect.type === 'preprocess' || config._def.effect.type === 'transform') {
       return zodTypeToSwagger(config._def.schema);
     }
 
     // TO-DO: Improve swagger output for zod schema with refinement (validate through JS functions)
-    if (config._def.effect.type === 'refinement') {
-      return {
-        type: 'object',
-        description: 'Validator function',
-      };
-    }
+    return {
+      type: 'object',
+      description: 'Validator function',
+      additionalProperties: true,
+    };
   }
 
   if (config instanceof ZodDefault) {

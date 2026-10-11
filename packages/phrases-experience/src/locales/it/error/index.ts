@@ -12,6 +12,12 @@ const error = {
   username_should_not_start_with_number: "L'username non dovrebbe iniziare con un numero",
   username_should_not_start_with_tg_prefix: "L'username non deve iniziare con tg_.",
   username_invalid_charset: "L'username dovrebbe contenere solo lettere, numeri o underscore.",
+  username_too_short: "L'username deve essere lungo almeno {{min}} caratteri.",
+  username_too_long: "L'username deve essere lungo al massimo {{max}} caratteri.",
+  username_uppercase_not_allowed: 'Le lettere maiuscole non sono consentite negli username.',
+  username_lowercase_not_allowed: 'Le lettere minuscole non sono consentite negli username.',
+  username_numbers_not_allowed: 'I numeri non sono consentiti negli username.',
+  username_underscore_not_allowed: 'Gli underscore non sono consentiti negli username.',
   invalid_email: "L'email non è valida",
   invalid_phone: 'Il numero di telefono non è valido',
   passwords_do_not_match: 'Le password non corrispondono. Per favore prova di nuovo.',
@@ -29,9 +35,18 @@ const error = {
   invalid_link: 'Link invalido',
   invalid_link_description: 'Il tuo token monouso potrebbe essere scaduto o non è più valido.',
   captcha_verification_failed: 'Errore durante la verifica del captcha.',
+  send_verification_code_failed: 'Invio del codice di verifica non riuscito. Riprova più tardi.',
+  send_verification_code_failed_use_password:
+    'Invio del codice di verifica non riuscito. Accedi invece con la tua password.',
   terms_acceptance_required: 'Accettazione dei termini richiesta',
   terms_acceptance_required_description: 'Devi accettare i termini per continuare.',
   something_went_wrong: 'Qualcosa è andato storto',
+  account_suspended: 'Account sospeso',
+  account_suspended_description:
+    "Questo account è stato sospeso. Contatta l'amministratore per assistenza.",
+  access_denied: 'Accesso negato',
+  application_access_denied:
+    'Non hai il permesso di accedere a questa applicazione.\nPer assistenza, contatta il tuo amministratore.',
   feature_not_enabled:
     'Non hai il permesso di accedere a questa funzionalità. Per assistenza, contatta il tuo amministratore.',
 };

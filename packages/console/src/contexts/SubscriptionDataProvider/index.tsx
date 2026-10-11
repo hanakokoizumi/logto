@@ -21,6 +21,7 @@ const defaultSubscription = defaultTenantResponse.subscription;
 export const SubscriptionDataContext = createContext<FullContext>({
   currentSubscription: defaultSubscription,
   onCurrentSubscriptionUpdated: noop,
+  mutateLicense: noop,
   /* ==== For new pricing model ==== */
   logtoSkus: [],
   currentSku: defaultLogtoSku,

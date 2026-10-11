@@ -1,5 +1,26 @@
 # @logto/connector-github
 
+## 1.7.6
+
+### Patch Changes
+
+- @logto/connector-kit@5.1.1
+
+## 1.7.5
+
+### Patch Changes
+
+- Updated dependencies [e7b6e9de1]
+- Updated dependencies [b7386a5113]
+  - @logto/connector-kit@5.1.0
+
+## 1.7.4
+
+### Patch Changes
+
+- Updated dependencies [41a56f79e3]
+  - @logto/connector-kit@5.0.1
+
 ## 1.7.3
 
 ### Patch Changes

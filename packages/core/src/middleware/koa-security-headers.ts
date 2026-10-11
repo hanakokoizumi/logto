@@ -1,11 +1,13 @@
 import { type IncomingMessage, type ServerResponse } from 'node:http';
 import { promisify } from 'node:util';
 
-import { conditionalArray } from '@silverhand/essentials';
+import type { CustomUiCsp } from '@logto/schemas';
+import { conditional, conditionalArray } from '@silverhand/essentials';
 import helmet, { type HelmetOptions } from 'helmet';
 import type { MiddlewareType } from 'koa';
 
 import { EnvSet, AdminApps, UserApps, getTenantEndpoint } from '#src/env-set/index.js';
+import type Queries from '#src/tenants/Queries.js';
 
 /**
  * Apply security headers to the response using helmet
@@ -35,10 +37,22 @@ const getOssServerOrigins = (): string[] => {
   }
 };
 
-export default function koaSecurityHeaders<StateT, ContextT, ResponseBodyT>(
-  mountedApps: string[],
-  tenantId: string
-): MiddlewareType<StateT, ContextT, ResponseBodyT> {
+type SecurityHeaderSettings = {
+  readonly basicSecurityHeaderSettings: HelmetOptions;
+  readonly consoleSecurityHeaderSettings: HelmetOptions;
+  readonly accountCenterSecurityHeaderSettings: HelmetOptions;
+  readonly defaultExperienceSecurityHeaderSettings: HelmetOptions;
+  readonly getExperienceSecurityHeaderSettings: (
+    customUiCsp?: CustomUiCsp,
+    capEndpoint?: string
+  ) => HelmetOptions;
+};
+
+const appendCustomSources = (sources: string[], customSources: string[] = []) => [
+  ...new Set([...sources, ...customSources]),
+];
+
+const createSecurityHeaderSettings = (tenantId: string): SecurityHeaderSettings => {
   const { isProduction, isCloud, urlSet, adminUrlSet, cloudUrlSet } = EnvSet.values;
 
   const tenantEndpointOrigin = getTenantEndpoint(tenantId, EnvSet.values).origin;
@@ -59,21 +73,23 @@ export default function koaSecurityHeaders<StateT, ContextT, ResponseBodyT>(
         'http://localhost:5173', // From local website
         'http://localhost:5174', // From local blog
       ];
+  /** Allow HTTP avatar URLs from local S3-compatible storage (e.g. MinIO) in dev. */
+  const developmentUserAssetImageSources = isProduction
+    ? []
+    : ['http://localhost:9000', 'http://127.0.0.1:9000'];
+  const userAssetImageSources = ["'self'", 'data:', 'https:', ...developmentUserAssetImageSources];
+  /**
+   * Avatar upload surfaces (Experience and Account Center) preview the locally selected image
+   * via an object URL (`blob:`) inside the crop modal. Scoped to these two apps so Console's
+   * `img-src` is not widened.
+   */
+  const avatarCropImageSources = [...userAssetImageSources, 'blob:'];
   const logtoOrigin = 'https://*.logto.io';
   /** Google Sign-In (GSI) origin for Google One Tap. */
   const gsiOrigin = 'https://accounts.google.com/gsi/';
 
   // Parse the OSS survey endpoint origin for CSP connect-src allowlisting.
   const ossSurveyOrigins = getOssServerOrigins();
-
-  /**
-   * Temporary hardcoded tenant-level `connect-src` allowlist for BYO-UI customers.
-   * TODO: migrate to DB so tenants can self-manage. Review each entry for trust.
-   */
-  const customTenantConnectSourceAllowlist = [
-    // LaunchDarkly — A/B testing SDK (flag eval, streaming, events).
-    'https://*.launchdarkly.com',
-  ];
 
   // We have the following use cases:
   //
@@ -113,60 +129,91 @@ export default function koaSecurityHeaders<StateT, ContextT, ResponseBodyT>(
     },
   };
 
-  // @ts-expect-error: helmet typings has lots of {A?: T, B?: never} | {A?: never, B?: T} options definitions. Optional settings type can not inferred correctly.
-  const experienceSecurityHeaderSettings: HelmetOptions = {
-    ...basicSecurityHeaderSettings,
-    // Guarded by CSP header below
-    frameguard: false,
-    // Allow being loaded by console preview iframe
-    crossOriginResourcePolicy: {
-      policy: 'cross-origin',
-    },
-    contentSecurityPolicy: {
-      useDefaults: true,
-      directives: {
-        'upgrade-insecure-requests': null,
-        imgSrc: ["'self'", 'data:', 'https:'],
-        scriptSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          "'unsafe-hashes'",
-          `${gsiOrigin}client`,
-          // Some of our users may use the Cloudflare Web Analytics service. We need to allow it to
-          // load its scripts.
-          'https://static.cloudflareinsights.com/',
-          // Cloudflare Turnstile
-          'https://challenges.cloudflare.com/turnstile/v0/api.js',
-          // Google Recaptcha Enterprise
-          'https://www.google.com/recaptcha/enterprise.js',
-          'https://recaptcha.net/recaptcha/enterprise.js',
-          // Google Recaptcha static resources
-          'https://www.gstatic.com/recaptcha/',
-          'https://www.gstatic.cn/recaptcha/',
-          // Allow "unsafe-eval" for debugging purpose in non-production environment
-          ...conditionalArray(!isProduction && "'unsafe-eval'"),
-        ],
-        scriptSrcAttr: ["'unsafe-inline'"],
-        connectSrc: [
-          "'self'",
-          gsiOrigin,
-          tenantEndpointOrigin,
-          // Allow reCAPTCHA API calls
-          'https://www.google.com/recaptcha/',
-          'https://recaptcha.net/recaptcha/',
-          'https://www.gstatic.com/recaptcha/',
-          'https://www.gstatic.cn/recaptcha/',
-          ...customTenantConnectSourceAllowlist,
-          ...developmentOrigins,
-        ],
-        // WARNING (high risk): Need to allow self-hosted terms of use page loaded in an iframe
-        frameSrc: ["'self'", 'https:', gsiOrigin],
-        // Allow being loaded by console preview iframe
-        frameAncestors: ["'self'", ...adminOrigins],
-        defaultSrc: ["'self'", gsiOrigin],
+  const experienceScriptSource = [
+    "'self'",
+    "'unsafe-inline'",
+    "'unsafe-hashes'",
+    `${gsiOrigin}client`,
+    // Some of our users may use the Cloudflare Web Analytics service. We need to allow it to
+    // load its scripts.
+    'https://static.cloudflareinsights.com/',
+    // Cloudflare Turnstile
+    'https://challenges.cloudflare.com/turnstile/v0/api.js',
+    // Google Recaptcha Enterprise
+    'https://www.google.com/recaptcha/enterprise.js',
+    'https://recaptcha.net/recaptcha/enterprise.js',
+    // Google Recaptcha static resources
+    'https://www.gstatic.com/recaptcha/',
+    'https://www.gstatic.cn/recaptcha/',
+    // Allow "unsafe-eval" for debugging purpose in non-production environment
+    ...conditionalArray(!isProduction && "'unsafe-eval'"),
+  ];
+
+  const experienceConnectSource = [
+    "'self'",
+    gsiOrigin,
+    tenantEndpointOrigin,
+    // Allow reCAPTCHA API calls
+    'https://www.google.com/recaptcha/',
+    'https://recaptcha.net/recaptcha/',
+    'https://www.gstatic.com/recaptcha/',
+    'https://www.gstatic.cn/recaptcha/',
+    ...developmentOrigins,
+  ];
+
+  /**
+   * @param customUiCsp Extra sources for the Bring your UI assets.
+   * @param capEndpoint The Cap Standalone endpoint if Cap is the configured captcha provider. The
+   * Cap widget calls the instance directly, solves the proof-of-work in `blob:` workers with
+   * WebAssembly, and runs the instance's instrumentation challenge (which evaluates scripts to
+   * fingerprint the browser) in a sandboxed `srcdoc` iframe that inherits this policy. These
+   * sources are only allowed while Cap is configured.
+   */
+  const getExperienceSecurityHeaderSettings = (
+    customUiCsp: CustomUiCsp = {},
+    capEndpoint?: string
+  ) => {
+    const capOrigin = capEndpoint && new URL(capEndpoint).origin;
+
+    // @ts-expect-error: helmet typings has lots of {A?: T, B?: never} | {A?: never, B?: T} options definitions. Optional settings type can not inferred correctly.
+    const settings: HelmetOptions = {
+      ...basicSecurityHeaderSettings,
+      // Guarded by CSP header below
+      frameguard: false,
+      // Allow being loaded by console preview iframe
+      crossOriginResourcePolicy: {
+        policy: 'cross-origin',
       },
-    },
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          'upgrade-insecure-requests': null,
+          imgSrc: avatarCropImageSources,
+          scriptSrc: appendCustomSources(
+            [
+              ...experienceScriptSource,
+              ...conditionalArray(capOrigin && ["'wasm-unsafe-eval'", "'unsafe-eval'"]),
+            ],
+            customUiCsp.scriptSrc
+          ),
+          scriptSrcAttr: ["'unsafe-inline'"],
+          connectSrc: appendCustomSources(
+            [...experienceConnectSource, ...conditionalArray(capOrigin)],
+            customUiCsp.connectSrc
+          ),
+          ...(capOrigin && { workerSrc: ["'self'", 'blob:'] }),
+          // WARNING (high risk): Need to allow self-hosted terms of use page loaded in an iframe
+          frameSrc: ["'self'", 'https:', gsiOrigin],
+          // Allow being loaded by console preview iframe
+          frameAncestors: ["'self'", ...adminOrigins],
+          defaultSrc: ["'self'", gsiOrigin],
+        },
+      },
+    };
+
+    return settings;
   };
+  const defaultExperienceSecurityHeaderSettings = getExperienceSecurityHeaderSettings();
 
   // @ts-expect-error: helmet typings has lots of {A?: T, B?: never} | {A?: never, B?: T} options definitions. Optional settings type can not inferred correctly.
   const accountCenterSecurityHeaderSettings: HelmetOptions = {
@@ -177,13 +224,16 @@ export default function koaSecurityHeaders<StateT, ContextT, ResponseBodyT>(
       useDefaults: true,
       directives: {
         'upgrade-insecure-requests': null,
-        imgSrc: ["'self'", 'data:', 'https:'],
+        imgSrc: avatarCropImageSources,
         scriptSrc: [
           "'self'",
+          "'unsafe-inline'",
+          "'unsafe-hashes'",
           // Some of our users may use the Cloudflare Web Analytics service. We need to allow it to load its scripts.
           'https://static.cloudflareinsights.com/',
-          ...conditionalArray(!isProduction && ["'unsafe-eval'"]),
+          ...conditionalArray(!isProduction && "'unsafe-eval'"),
         ],
+        scriptSrcAttr: ["'unsafe-inline'"],
         connectSrc: ["'self'", tenantEndpointOrigin, ...developmentOrigins],
         frameSrc: ["'self'"],
       },
@@ -199,7 +249,7 @@ export default function koaSecurityHeaders<StateT, ContextT, ResponseBodyT>(
       useDefaults: true,
       directives: {
         'upgrade-insecure-requests': null,
-        imgSrc: ["'self'", 'data:', 'https:'],
+        imgSrc: userAssetImageSources,
         // Allow "unsafe-eval" and "unsafe-inline" for debugging purpose in non-production environment
         scriptSrc: [
           "'self'",
@@ -218,6 +268,63 @@ export default function koaSecurityHeaders<StateT, ContextT, ResponseBodyT>(
       },
     },
   };
+
+  return {
+    basicSecurityHeaderSettings,
+    consoleSecurityHeaderSettings,
+    accountCenterSecurityHeaderSettings,
+    defaultExperienceSecurityHeaderSettings,
+    getExperienceSecurityHeaderSettings,
+  };
+};
+
+export const koaExperienceSecurityHeaders = <StateT, ContextT, ResponseBodyT>(
+  tenantId: string,
+  queries: Queries,
+  mountedApps: string[] = []
+): MiddlewareType<StateT, ContextT, ResponseBodyT> => {
+  const { defaultExperienceSecurityHeaderSettings, getExperienceSecurityHeaderSettings } =
+    createSecurityHeaderSettings(tenantId);
+
+  return async (ctx, next) => {
+    if (mountedApps.some((app) => app !== '' && ctx.request.path.startsWith(`/${app}`))) {
+      return next();
+    }
+
+    const { req, res } = ctx;
+    const [{ customUiAssets, customUiCsp, captchaPolicy }, configuredCapEndpoint] =
+      await Promise.all([
+        queries.signInExperiences.findDefaultSignInExperience(),
+        queries.captchaProviders.findCapEndpoint(),
+      ]);
+    // The Cap widget is only loaded when CAPTCHA is enabled, so only relax the CSP in that case
+    const capEndpoint = captchaPolicy.enabled ? configuredCapEndpoint : null;
+
+    await helmetPromise(
+      (customUiAssets ?? capEndpoint)
+        ? getExperienceSecurityHeaderSettings(
+            conditional(customUiAssets && customUiCsp),
+            capEndpoint ?? undefined
+          )
+        : defaultExperienceSecurityHeaderSettings,
+      req,
+      res
+    );
+
+    return next();
+  };
+};
+
+export default function koaSecurityHeaders<StateT, ContextT, ResponseBodyT>(
+  mountedApps: string[],
+  tenantId: string
+): MiddlewareType<StateT, ContextT, ResponseBodyT> {
+  const {
+    basicSecurityHeaderSettings,
+    consoleSecurityHeaderSettings,
+    accountCenterSecurityHeaderSettings,
+    defaultExperienceSecurityHeaderSettings,
+  } = createSecurityHeaderSettings(tenantId);
 
   return async (ctx, next) => {
     const { request, req, res } = ctx;
@@ -247,7 +354,7 @@ export default function koaSecurityHeaders<StateT, ContextT, ResponseBodyT>(
     }
 
     // Experience
-    await helmetPromise(experienceSecurityHeaderSettings, req, res);
+    await helmetPromise(defaultExperienceSecurityHeaderSettings, req, res);
 
     return next();
   };

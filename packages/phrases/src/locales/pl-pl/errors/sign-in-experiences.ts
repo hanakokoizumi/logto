@@ -38,6 +38,14 @@ const sign_in_experiences = {
     'Nieprawidłowe elementy niestandardowej listy blokowanych adresów e-mail: {{items, list(type:conjunction)}}. Każdy element musi być prawidłowym adresem e-mail lub domeną, np. foo@example.com lub @example.com.',
   forgot_password_method_requires_connector:
     'Metoda "Zapomniałem hasła" wymaga skonfigurowania odpowiedniego łącznika {{method}}.',
+  password_expiration_requires_forgot_password:
+    'Wygasanie hasła wymaga co najmniej jednej metody odzyskiwania hasła z poprawnym konektorem.',
+  password_expiration_not_enabled:
+    'Polityka wygasania haseł nie jest włączona. Włącz ją w ustawieniach logowania przed wygaszeniem haseł.',
+  password_expiration_invalid_period_days:
+    'Liczba dni okresu ważności musi być dodatnią liczbą całkowitą, gdy wygaśnięcie hasła jest włączone.',
+  username_policy_case_conflicts_exist:
+    'Nie można zmienić na nazwy użytkowników nie uwzględniające wielkości liter, gdy istnieją nazwy różniące się wyłącznie wielkością liter. Rozwiąż konflikty i spróbuj ponownie.',
 };
 
 export default Object.freeze(sign_in_experiences);

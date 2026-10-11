@@ -35,6 +35,8 @@ const description = {
   reset_password: 'إعادة تعيين كلمة المرور',
   reset_password_description:
     'أدخل {{types, list(type: disjunction;)}} المرتبطة بحسابك، وسنرسل لك رمز التحقق لإعادة تعيين كلمة المرور.',
+  reset_password_magic_link_description:
+    'أدخل عنوان البريد الإلكتروني المرتبط بحسابك لمتابعة إعادة تعيين كلمة المرور.',
   new_password: 'كلمة المرور الجديدة',
   set_password: 'تعيين كلمة المرور',
   password_changed: 'تم تغيير كلمة المرور',
@@ -45,6 +47,7 @@ const description = {
   enter_username: 'تعيين اسم المستخدم',
   enter_username_description:
     'اسم المستخدم هو بديل لتسجيل الدخول. يجب أن يحتوي اسم المستخدم فقط على الأحرف والأرقام وشرطات السفل.',
+  enter_username_policy_description: 'اسم المستخدم هو بديل لتسجيل الدخول. {{requirements}}',
   link_email: 'ربط البريد الإلكتروني',
   link_phone: 'ربط الهاتف',
   link_email_or_phone: 'ربط البريد الإلكتروني أو الهاتف',
@@ -81,12 +84,25 @@ const description = {
     character_types_other:
       'يجب أن يحتوي على {{count}} أنواع على الأقل من الأحرف الكبيرة والصغيرة والأرقام والرموز',
   },
+  username_requirements: 'اسم المستخدم {{items, list}}.',
+  username_requirement: {
+    length: 'يجب أن يتكون من {{min}} إلى {{max}} حرفًا',
+    characters: 'لا يمكن أن يحتوي إلا على {{characters, list}}',
+  },
+  username_character: {
+    uppercase: 'الأحرف الكبيرة',
+    lowercase: 'الأحرف الصغيرة',
+    number: 'الأرقام',
+    underscore: 'الشرطات السفلية',
+  },
   use: 'استخدام',
   single_sign_on_email_form: 'أدخل عنوان بريدك الإلكتروني الخاص بالشركة',
   single_sign_on_connectors_list:
     'لقد قامت الشركة بتمكين تسجيل الدخول الموحد لحساب البريد الإلكتروني {{email}}. يمكنك الاستمرار في تسجيل الدخول باستخدام موفرات SSO التالية.',
   single_sign_on_enabled: 'تم تمكين تسجيل الدخول الموحد لهذا الحساب',
   authorize_title: 'السماح لـ {{name}}',
+  unregistered_client_notice:
+    'هذا التطبيق معلن ذاتيًا من قِبل <hostname>{{host}}</hostname>، بما في ذلك اسمه وشعاره. يرجى التحقق من اسم المضيف قبل المتابعة.',
   request_permission: '{{name}} يطلب الوصول إلى:',
   grant_organization_access: 'منح الوصول إلى المؤسسة:',
   authorize_personal_data_usage: 'السماح باستخدام البيانات الشخصية الخاصة بك:',
@@ -105,6 +121,8 @@ const description = {
   identifier_register_description:
     'أدخل {{types, list(type: disjunction;)}} الخاص بك لإنشاء حساب جديد.',
   all_account_creation_options: 'جميع خيارات إنشاء الحساب',
+  password_expired: 'انتهت صلاحية كلمة المرور الخاصة بك ويجب إعادة تعيينها قبل تسجيل الدخول.',
+  password_expiration_reset: 'إعادة تعيين كلمة المرور',
   back_to_sign_in: 'العودة إلى تسجيل الدخول',
   support_email: 'البريد الإلكتروني للدعم: <link></link>',
   support_website: 'موقع الدعم: <link></link>',

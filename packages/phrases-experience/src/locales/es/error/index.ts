@@ -13,6 +13,12 @@ const error = {
   username_should_not_start_with_tg_prefix: 'El nombre de usuario no debe comenzar con tg_.',
   username_invalid_charset:
     'El nombre de usuario solo debe contener letras, números o guiones bajos.',
+  username_too_short: 'El nombre de usuario debe tener al menos {{min}} caracteres.',
+  username_too_long: 'El nombre de usuario debe tener como máximo {{max}} caracteres.',
+  username_uppercase_not_allowed: 'No se permiten letras mayúsculas en los nombres de usuario.',
+  username_lowercase_not_allowed: 'No se permiten letras minúsculas en los nombres de usuario.',
+  username_numbers_not_allowed: 'No se permiten números en los nombres de usuario.',
+  username_underscore_not_allowed: 'No se permiten guiones bajos en los nombres de usuario.',
   invalid_email: 'El correo electrónico no es válido',
   invalid_phone: 'El número de teléfono no es válido',
   passwords_do_not_match: 'Las contraseñas no coinciden. Por favor intente de nuevo',
@@ -31,10 +37,20 @@ const error = {
   invalid_link: 'Enlace no válido',
   invalid_link_description: 'Tu token de un solo uso puede haber expirado o ya no ser válido.',
   captcha_verification_failed: 'Error al verificar el captcha.',
+  send_verification_code_failed:
+    'No se pudo enviar el código de verificación. Inténtalo de nuevo más tarde.',
+  send_verification_code_failed_use_password:
+    'No se pudo enviar el código de verificación. Inicia sesión con tu contraseña en su lugar.',
   terms_acceptance_required: 'Se requiere aceptar los términos',
   terms_acceptance_required_description:
     'Debes aceptar los términos para continuar. Por favor, inténtalo de nuevo.',
   something_went_wrong: 'Algo salió mal',
+  account_suspended: 'Cuenta suspendida',
+  account_suspended_description:
+    'Esta cuenta ha sido suspendida. Ponte en contacto con el administrador para obtener ayuda.',
+  access_denied: 'Acceso denegado',
+  application_access_denied:
+    'No tiene permiso para acceder a esta aplicación.\nPor favor, contacte a su administrador para obtener ayuda.',
   feature_not_enabled:
     'No tiene permiso para acceder a esta función. Por favor, contacte a su administrador para obtener ayuda.',
 };

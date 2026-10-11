@@ -21,6 +21,14 @@ const user_details = {
     new_password: 'Nueva contraseña:',
     password: 'Contraseña:',
   },
+  expire_password: {
+    button: 'Expirar',
+    title: '¿Está seguro de que desea que expire esta contraseña?',
+    content:
+      'El usuario deberá restablecer su contraseña en el próximo inicio de sesión. Esta acción no se puede deshacer.',
+    success: 'La contraseña del usuario ha sido marcada como expirada.',
+    not_enabled_tooltip: 'La política de expiración de contraseña no está habilitada.',
+  },
   tab_settings: 'Configuración',
   tab_roles: 'Roles de usuario',
   tab_logs: 'Registros de usuario',
@@ -178,7 +186,7 @@ const user_details = {
     access_created_at_column: 'Acceso creado el',
     revoke_access_title: '¿Revocar acceso?',
     revoke_access_description:
-      'Esto revocará el acceso de la aplicación a la cuenta de este usuario en todos los dispositivos. El usuario deberá volver a autorizarla para recuperar el acceso.',
+      'Esto revocará el acceso de la aplicación a la cuenta de este usuario en todos los dispositivos. El usuario deberá volver a autorizarla para recuperar el acceso. Los tokens de acceso emitidos previamente pueden seguir siendo válidos hasta que expiren.',
   },
   connections: {
     title: 'Conexión',

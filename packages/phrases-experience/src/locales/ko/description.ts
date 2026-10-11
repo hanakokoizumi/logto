@@ -34,6 +34,8 @@ const description = {
   reset_password: '비밀번호를 잊으셨나요',
   reset_password_description:
     '귀하의 계정과 연결된 {{types, list(type: disjunction;)}}를 입력하면 비밀번호 재설정을 위한 인증 코드를 보내드립니다.',
+  reset_password_magic_link_description:
+    '비밀번호 재설정을 계속하려면 계정에 연결된 이메일 주소를 입력하세요.',
   new_password: '새 비밀번호',
   set_password: '비밀번호 설정',
   password_changed: '비밀번호 변경됨',
@@ -44,6 +46,7 @@ const description = {
   enter_username: '사용자 이름 설정하기',
   enter_username_description:
     '사용자 이름은 로그인을 할 때 사용되요. 사용자 이름에는 문자, 숫자 및 밑줄만 포함되어야 해요.',
+  enter_username_policy_description: '사용자 이름은 로그인을 할 때 사용되요. {{requirements}}',
   link_email: '이메일 연동',
   link_phone: '휴대전화번호 연동',
   link_email_or_phone: '이메일 또는 휴대전화번호 연동',
@@ -75,12 +78,25 @@ const description = {
     character_types_many: '최소 {{count}} 종류의 대문자, 소문자, 숫자, 특수 기호를 포함해야 함',
     character_types_other: '최소 {{count}} 개의 대문자, 소문자, 숫자, 특수 기호를 포함해야 함',
   },
+  username_requirements: '사용자 이름 조건: {{items, list}}.',
+  username_requirement: {
+    length: '{{min}}~{{max}}자',
+    characters: '{{characters, list}}만 사용 가능',
+  },
+  username_character: {
+    uppercase: '대문자',
+    lowercase: '소문자',
+    number: '숫자',
+    underscore: '밑줄',
+  },
   use: '사용',
   single_sign_on_email_form: '기업 이메일 주소를 입력하세요',
   single_sign_on_connectors_list:
     '귀하의 기업은 {{email}} 이메일 계정에 대해 Single Sign-On을 활성화했습니다. 다음 SSO 제공업체를 사용하여 로그인을 계속할 수 있습니다.',
   single_sign_on_enabled: '이 계정에는 Single Sign-On이 활성화되어 있습니다.',
   authorize_title: '{{name}} 권한 부여',
+  unregistered_client_notice:
+    '이 앱은 이름과 로고를 포함해 <hostname>{{host}}</hostname>이(가) 직접 선언한 것입니다. 계속하기 전에 호스트 이름을 확인하세요.',
   request_permission: '{{name}} 이(가) 다음에 대한 액세스를 요청하고 있습니다:',
   grant_organization_access: '조직 접근 권한 부여:',
   authorize_personal_data_usage: '개인 데이터 사용 권한 부여:',
@@ -99,6 +115,8 @@ const description = {
   identifier_register_description:
     '새 계정을 만들려면 {{types, list(type: disjunction;)}}을(를) 입력하세요.',
   all_account_creation_options: '모든 계정 생성 옵션',
+  password_expired: '비밀번호가 만료되었습니다. 로그인하기 전에 재설정해야 합니다.',
+  password_expiration_reset: '비밀번호 재설정',
   back_to_sign_in: '로그인으로 돌아가기',
   support_email: '지원 이메일: <link></link>',
   support_website: '지원 웹사이트: <link></link>',

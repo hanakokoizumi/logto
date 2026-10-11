@@ -26,6 +26,24 @@ const profile = {
     male: 'Masculino',
     prefer_not_to_say: 'Prefiro não dizer',
   },
+  checkbox_value: {
+    checked: 'Sim',
+    unchecked: 'Não',
+  },
+  avatar_upload: {
+    upload: 'Enviar',
+    remove: 'Remover',
+    uploading: 'Enviando...',
+    hint: 'Tamanho recomendado 1:1, até {{limit}}.',
+    error_file_type: 'O tipo de arquivo deve ser {{extensions}}.',
+    error_file_size: 'O tamanho do arquivo não pode exceder {{limit}}.',
+    error_storage_not_configured: 'Não foi possível enviar a foto. Tente novamente mais tarde.',
+    error_upload: 'Falha ao enviar a foto. Tente novamente.',
+    error_save: 'Não foi possível salvar sua foto. Tente novamente.',
+    crop_title: 'Recortar foto',
+    zoom: 'Zoom',
+    error_crop: 'Falha ao recortar a imagem. Tente novamente.',
+  },
 };
 
 export default Object.freeze(profile);

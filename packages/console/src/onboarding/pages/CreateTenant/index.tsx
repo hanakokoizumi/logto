@@ -1,6 +1,8 @@
 import { emailRegEx } from '@logto/core-kit';
 import { useLogto } from '@logto/react';
 import { TenantRole, Theme } from '@logto/schemas';
+import { conditional } from '@silverhand/essentials';
+import { usePostHog } from 'posthog-js/react';
 import { useCallback, useContext, useMemo } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
@@ -30,10 +32,12 @@ import InviteEmailsInput from '@/pages/TenantSettings/TenantMembers/InviteEmails
 import { type InviteeEmailItem } from '@/pages/TenantSettings/TenantMembers/types';
 import { trySubmitSafe } from '@/utils/form';
 
+import HearAboutUs, { type HearAboutUsValue, sourcesWithDetail } from './HearAboutUs';
 import styles from './index.module.scss';
 
 type CreateTenantForm = Omit<CreateTenantData, 'tag'> & {
   collaboratorEmails: InviteeEmailItem[];
+  hearAboutUs: HearAboutUsValue;
 };
 
 function CreateTenant() {
@@ -42,6 +46,7 @@ function CreateTenant() {
       name: 'My project',
       regionName: defaultRegionName,
       collaboratorEmails: [],
+      hearAboutUs: {},
     },
   });
   const {
@@ -53,7 +58,10 @@ function CreateTenant() {
   const { prependTenant } = useContext(TenantsContext);
   const theme = useTheme();
   const { t, i18n } = useTranslation(undefined, { keyPrefix: 'admin_console' });
-  const { update } = useUserOnboardingData();
+  const {
+    data: { isOnboardingDone },
+    update,
+  } = useUserOnboardingData();
   const parseEmailOptions = useCallback(
     (values: InviteeEmailItem[]) => {
       const validEmails = values.filter(({ value }) => emailRegEx.test(value));
@@ -73,6 +81,7 @@ function CreateTenant() {
   const cloudApi = useCloudApi();
   const { currentTenant } = useContext(TenantsContext);
   const { regions, regionsError } = useAvailableRegions();
+  const postHog = usePostHog();
 
   const publicRegions = useMemo(
     () => regions?.filter((region) => !region.isPrivate) ?? [],
@@ -80,39 +89,63 @@ function CreateTenant() {
   );
 
   const onCreateClick = handleSubmit(
-    trySubmitSafe(async ({ name, regionName, collaboratorEmails }: CreateTenantForm) => {
-      reportToGoogle(GtagConversionId.SignUp, { transactionId: currentTenant?.id });
-      const newTenant = await cloudApi.post('/api/tenants', {
-        body: { name: name || 'My project', regionName },
-      });
-      prependTenant(newTenant);
-      toast.success(t('tenants.create_modal.tenant_created'));
+    trySubmitSafe(
+      async ({ name, regionName, collaboratorEmails, hearAboutUs }: CreateTenantForm) => {
+        reportToGoogle(GtagConversionId.SignUp, { transactionId: currentTenant?.id });
+        const newTenant = await cloudApi.post('/api/tenants', {
+          body: { name: name || 'My project', regionName },
+        });
+        prependTenant(newTenant);
+        toast.success(t('tenants.create_modal.tenant_created'));
 
-      const tenantCloudApi = createTenantApi({
-        hideErrorToast: true,
-        isAuthenticated,
-        getOrganizationToken,
-        tenantId: newTenant.id,
-        language: i18n.language,
-      });
-
-      if (collaboratorEmails.length > 0) {
-        // Should not block the onboarding flow if the invitation fails.
-        try {
-          await tenantCloudApi.post('/api/tenants/:tenantId/invitations', {
-            params: { tenantId: newTenant.id },
-            body: {
-              invitee: collaboratorEmails.map(({ value }) => value),
-              roleName: TenantRole.Collaborator,
-            },
+        // Only report the questionnaire when it was shown (i.e., the user hasn't answered before).
+        if (!isOnboardingDone) {
+          const { source } = hearAboutUs;
+          const sourceDetail = conditional(
+            source && sourcesWithDetail.has(source) && hearAboutUs.detail?.trim()
+          );
+          postHog.capture('console:user_source_submit', {
+            source: source ?? 'skipped',
+            ...conditional(sourceDetail && { source_detail: sourceDetail }),
+            ...conditional(
+              source && {
+                $set_once: {
+                  self_reported_source: source,
+                  ...conditional(sourceDetail && { self_reported_source_detail: sourceDetail }),
+                },
+              }
+            ),
           });
-          toast.success(t('tenant_members.messages.invitation_sent'));
-        } catch {
-          toast.error(t('tenants.create_modal.invitation_failed', { duration: 5 }));
+        }
+
+        const tenantCloudApi = createTenantApi({
+          hideErrorToast: true,
+          isAuthenticated,
+          getOrganizationToken,
+          tenantId: newTenant.id,
+          language: i18n.language,
+        });
+
+        if (collaboratorEmails.length > 0) {
+          // Should not block the onboarding flow if the invitation fails.
+          try {
+            await tenantCloudApi.post('/api/tenants/:tenantId/invitations', {
+              params: { tenantId: newTenant.id },
+              body: {
+                invitee: collaboratorEmails.map(({ value }) => value),
+                roleName: TenantRole.Collaborator,
+              },
+            });
+            toast.success(t('tenant_members.messages.invitation_sent'));
+          } catch {
+            toast.error(t('tenants.create_modal.invitation_failed', { duration: 5 }));
+          }
+        }
+        if (!isOnboardingDone) {
+          await update({ isOnboardingDone: true });
         }
       }
-      await update({ isOnboardingDone: true });
-    })
+    )
   );
 
   return (
@@ -185,6 +218,15 @@ function CreateTenant() {
                 )}
               />
             </FormField>
+            {!isOnboardingDone && (
+              <Controller
+                name="hearAboutUs"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <HearAboutUs value={value} isDisabled={isSubmitting} onChange={onChange} />
+                )}
+              />
+            )}
           </FormProvider>
         </div>
       </OverlayScrollbar>

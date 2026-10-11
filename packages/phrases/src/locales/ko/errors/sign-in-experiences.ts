@@ -36,6 +36,14 @@ const sign_in_experiences = {
     '잘못된 사용자 정의 이메일 차단 목록 항목: {{items, list(type:conjunction)}}. 각 항목은 유효한 이메일 주소 또는 이메일 도메인이어야 합니다. 예: foo@example.com 또는 @example.com.',
   forgot_password_method_requires_connector:
     '비밀번호 찾기 방법은 해당 {{method}} 커넥터를 구성해야 합니다.',
+  password_expiration_requires_forgot_password:
+    '비밀번호 만료를 사용하려면 유효한 커넥터가 연결된 비밀번호 찾기 방법이 하나 이상 필요합니다.',
+  password_expiration_not_enabled:
+    '비밀번호 만료 정책이 활성화되지 않았습니다. 비밀번호를 만료시키기 전에 로그인 경험 설정에서 이를 활성화하세요.',
+  password_expiration_invalid_period_days:
+    '비밀번호 만료가 활성화된 경우 유효 기간(일)은 양의 정수여야 합니다.',
+  username_policy_case_conflicts_exist:
+    '대소문자만 다른 사용자 이름이 존재하는 경우 대소문자 구분 안 함으로 전환할 수 없습니다. 충돌을 해결한 후 다시 시도하세요.',
 };
 
 export default Object.freeze(sign_in_experiences);

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Locale catalog mirrors the complete Account Center phrase schema. */
 const account_center = {
   home: {
     title: 'Page introuvable',
@@ -8,15 +9,14 @@ const account_center = {
     security_title: 'Sécurité',
     security_description:
       "Modifiez ici les paramètres de votre compte afin d'en garantir la sécurité.",
-    /** UNTRANSLATED */
-    profile_title: 'Personal info',
-    /** UNTRANSLATED */
-    profile_description: 'Change your personal information here.',
-    /** UNTRANSLATED */
-    sidebar_personal_info: 'Personal info',
-    /** UNTRANSLATED */
-    sidebar_security: 'Security',
+    profile_title: 'Informations personnelles',
+    profile_description: 'Changez vos informations personnelles ici.',
+    sidebar_personal_info: 'Informations personnelles',
+    sidebar_security: 'Sécurité',
+    sidebar_sessions: 'Sessions',
     support: 'Assistance',
+    user_menu: 'Menu utilisateur',
+    sign_out: 'Se déconnecter',
   },
   verification: {
     title: 'Vérification de sécurité',
@@ -74,6 +74,7 @@ const account_center = {
     title: "Définir le nom d'utilisateur",
     description:
       "Le nom d'utilisateur doit contenir uniquement des lettres, des chiffres et des tirets bas.",
+    policy_description: '{{requirements}}',
     success: "Nom d'utilisateur mis à jour avec succès.",
   },
   security: {
@@ -101,7 +102,6 @@ const account_center = {
     backup_codes_count_other: '{{count}} codes restants',
     view: 'Voir',
     manage: 'Gérer',
-    turn_on_2_step_verification: 'Activer la vérification en deux étapes',
     turn_on_2_step_verification_description:
       'Ajoutez une couche de sécurité supplémentaire. Vous serez invité à effectuer une deuxième étape de vérification lors de la connexion.',
     turn_off_2_step_verification: 'Désactiver la vérification en deux étapes',
@@ -110,6 +110,9 @@ const account_center = {
     disable_2_step_verification: 'Désactiver',
     no_verification_method_warning:
       "Vous n'avez pas ajouté de deuxième méthode de vérification. Ajoutez-en au moins une pour activer la vérification en deux étapes lors de la connexion.",
+    passkey_sign_in_prompt: 'Inviter à configurer un passkey',
+    passkey_sign_in_prompt_description:
+      'Lorsque cette option est activée, il vous sera demandé de configurer un passkey pour une connexion plus rapide et plus sécurisée.',
     account_removal: 'Suppression du compte',
     delete_your_account: 'Supprimez votre compte',
     delete_account: 'Supprimer le compte',
@@ -125,6 +128,21 @@ const account_center = {
     email_removed: "L'adresse e-mail a été supprimée avec succès.",
     phone_removed: 'Le numéro de téléphone a été supprimé avec succès.',
     username_removed: "Le nom d'utilisateur a été supprimé avec succès.",
+    trusted_devices: {
+      title: 'Appareils de confiance MFA',
+      current_device: 'Appareil actuel',
+      expires_on: 'Expire le {{date}}',
+      unknown_location: 'Emplacement inconnu',
+      remove: 'Supprimer',
+      removed: "L'appareil de confiance a été supprimé.",
+      loading: 'Chargement...',
+      empty: 'Aucun appareil de confiance.',
+      load_failed: 'Impossible de charger les appareils de confiance. Veuillez réessayer.',
+      retry: 'Réessayer',
+      remove_confirmation_title: "Supprimer l'appareil de confiance ?",
+      remove_confirmation_description:
+        'Vous devrez à nouveau effectuer la MFA sur cet appareil lors de votre prochaine connexion. Votre session actuelle restera active.',
+    },
   },
   social: {
     linked: '{{connector}} a été lié avec succès.',
@@ -263,6 +281,32 @@ const account_center = {
       "Vous avez vérifié cet appareil avec succès pour l'authentification en deux étapes. Personnalisez le nom pour le reconnaître si vous avez plusieurs clés.",
     name_input_label: 'Nom',
   },
+  sessions: {
+    page_title: 'Sessions',
+    page_description: 'Gérez vos sessions actives et les applications tierces autorisées.',
+    title: 'Sessions',
+    current_session: 'Session actuelle',
+    signed_in_at: 'Connecté le {{date}}',
+    revoke_session: 'Déconnecter',
+    revoke_session_title: 'Déconnecter la session',
+    revoke_session_description:
+      'Cela déconnectera la session et révoquera tous les accès associés. Êtes-vous sûr de vouloir continuer ?',
+    no_other_sessions: 'Aucune autre session active.',
+    loading: 'Chargement...',
+    third_party_apps_title: 'Applications tierces',
+    no_third_party_apps: 'Aucune application tierce autorisée.',
+    third_party_apps_load_failed:
+      'Impossible de charger les applications tierces. Veuillez réessayer.',
+    granted_at: 'Autorisé le {{date}}',
+    dynamic_app: 'Application dynamique',
+    client_id: 'ID client : {{clientId}}',
+    revoke_grant: 'Supprimer',
+    revoke_grant_title: "Supprimer l'accès de l'application tierce",
+    revoke_grant_description:
+      "Cela révoquera l'accès accordé à cette application. Les jetons d'accès déjà émis peuvent rester valides jusqu'à leur expiration. Êtes-vous sûr de vouloir continuer ?",
+    revoke_grant_failed: 'Échec de la révocation de certaines autorisations. Veuillez réessayer.',
+  },
 };
 
 export default Object.freeze(account_center);
+/* eslint-enable max-lines */

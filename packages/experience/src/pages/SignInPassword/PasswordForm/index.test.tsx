@@ -1,7 +1,11 @@
 import { InteractionEvent, SignInIdentifier } from '@logto/schemas';
 import { fireEvent, waitFor, act } from '@testing-library/react';
 
+import ConfirmModalProvider from '@/Providers/ConfirmModalProvider';
+import UserInteractionContextProvider from '@/Providers/UserInteractionContextProvider';
 import renderWithPageContext from '@/__mocks__/RenderWithPageContext';
+import SettingsProvider from '@/__mocks__/RenderWithPageContext/SettingsProvider';
+import { mockSignInExperienceSettings } from '@/__mocks__/logto';
 import {
   signInWithPasswordIdentifier,
   initInteraction,
@@ -34,6 +38,24 @@ describe('PasswordSignInForm', () => {
     jest.clearAllMocks();
   });
 
+  const renderPasswordForm = (
+    props: {
+      identifier: SignInIdentifier;
+      value: string;
+      isVerificationCodeEnabled?: boolean;
+    },
+    settings?: Partial<typeof mockSignInExperienceSettings>
+  ) =>
+    renderWithPageContext(
+      <SettingsProvider settings={{ ...mockSignInExperienceSettings, ...settings }}>
+        <ConfirmModalProvider>
+          <UserInteractionContextProvider>
+            <PasswordForm {...props} />
+          </UserInteractionContextProvider>
+        </ConfirmModalProvider>
+      </SettingsProvider>
+    );
+
   test.each([
     { identifier: SignInIdentifier.Username, value: username, isVerificationCodeEnabled: false },
     { identifier: SignInIdentifier.Email, value: email, isVerificationCodeEnabled: true },
@@ -41,13 +63,11 @@ describe('PasswordSignInForm', () => {
   ])(
     'Password SignInForm for %variable.identifier',
     async ({ identifier, value, isVerificationCodeEnabled }) => {
-      const { getByText, queryByText, container } = renderWithPageContext(
-        <PasswordForm
-          identifier={identifier}
-          value={value}
-          isVerificationCodeEnabled={isVerificationCodeEnabled}
-        />
-      );
+      const { getByText, queryByText, container } = renderPasswordForm({
+        identifier,
+        value,
+        isVerificationCodeEnabled,
+      });
 
       const submitButton = getByText('action.continue');
 

@@ -16,6 +16,13 @@ const sign_up_and_sign_in = {
     set_a_password_option: '创建密码',
     verify_at_sign_up_option: '注册时验证身份',
     social_only_creation_description: '（仅对社交注册用户适用）',
+    collect_user_profile: '收集用户资料',
+    add_profile_fields: '添加资料字段',
+    profile_fields_hint: {
+      not_in_list: '没有你想要的字段？',
+      set_up: '立即设置',
+      go_to: '其他资料字段。',
+    },
   },
   sign_in: {
     title: '登录',
@@ -92,6 +99,38 @@ const sign_up_and_sign_in = {
     unknown_session_redirect_url: '未知会话重定向 URL',
     unknown_session_redirect_url_tip:
       '有时，Logto 可能无法识别用户在登录页面的会话，例如会话过期，或用户收藏或分享了登录链接。默认情况下，会出现“未知会话” 404 错误。为提升用户体验，请设置一个备用 URL ，将用户重定向回你的应用程序并重新开始身份验证。',
+  },
+  username_policy: {
+    title: '用户名策略',
+    description: '自定义用户名要求，包括长度、允许的字符以及是否区分大小写。',
+    manage_button: '管理',
+    modal_title: '用户名策略',
+    modal_description: '为你的终端用户自定义用户名要求。',
+    length: {
+      title: '用户名长度',
+      minimum: '最小值',
+      maximum: '最大值',
+      min_greater_than_max: '最小长度不能大于最大长度。',
+    },
+    allowed_chars: {
+      title: '允许的字符类型',
+      uppercase: '大写字母（A-Z）',
+      lowercase: '小写字母（a-z）',
+      numbers: '数字（0-9）',
+      underscore: '下划线（_）',
+      no_valid_leading_char: '不允许仅使用数字。请至少启用大写字母、小写字母或下划线中的一项。',
+      no_char_selected: '请至少选择一种字符类型。',
+    },
+    case_sensitive: {
+      title: '区分大小写的用户名',
+      description: '将大写和小写字母视为不同。“user123”和“User123”将被视为不同的用户名。',
+    },
+    case_conflicts: {
+      title: '检测到现有用户名冲突',
+      description:
+        '如果关闭区分大小写，部分用户名将发生冲突。请在保存前解决下方的 {{count}} 个冲突组。',
+      sample_title: '冲突的用户名',
+    },
   },
 };
 

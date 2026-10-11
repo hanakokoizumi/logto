@@ -26,6 +26,24 @@ const profile = {
     male: 'ذكر',
     prefer_not_to_say: 'أفضل عدم القول',
   },
+  checkbox_value: {
+    checked: 'نعم',
+    unchecked: 'لا',
+  },
+  avatar_upload: {
+    upload: 'رفع',
+    remove: 'إزالة',
+    uploading: 'جارٍ الرفع...',
+    hint: 'الحجم الموصى به 1:1، بحد أقصى {{limit}}.',
+    error_file_type: 'يجب أن يكون نوع الملف {{extensions}}.',
+    error_file_size: 'يجب ألا يتجاوز حجم الملف {{limit}}.',
+    error_storage_not_configured: 'تعذر رفع الصورة. يرجى المحاولة مرة أخرى لاحقًا.',
+    error_upload: 'فشل رفع الصورة. يرجى المحاولة مرة أخرى.',
+    error_save: 'تعذر حفظ صورتك. يُرجى المحاولة مرة أخرى.',
+    crop_title: 'اقتصاص الصورة',
+    zoom: 'تكبير',
+    error_crop: 'فشل اقتصاص الصورة. يرجى المحاولة مرة أخرى.',
+  },
 };
 
 export default Object.freeze(profile);

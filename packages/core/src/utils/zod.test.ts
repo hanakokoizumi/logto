@@ -5,7 +5,18 @@ import {
   translationGuard,
   customContentGuard,
 } from '@logto/schemas';
-import { string, boolean, number, object, nativeEnum, unknown, literal, union } from 'zod';
+import {
+  string,
+  boolean,
+  number,
+  object,
+  nativeEnum,
+  unknown,
+  literal,
+  union,
+  preprocess,
+  undefined as zUndefined,
+} from 'zod';
 
 import RequestError from '#src/errors/RequestError/index.js';
 
@@ -17,6 +28,7 @@ describe('zodTypeToSwagger', () => {
     expect(zodTypeToSwagger(jsonObjectGuard)).toEqual({
       type: 'object',
       description: 'arbitrary',
+      additionalProperties: true,
     });
   });
 
@@ -136,8 +148,39 @@ describe('zodTypeToSwagger', () => {
     });
   });
 
+  it('object type with undefined property', () => {
+    expect(
+      zodTypeToSwagger(
+        object({
+          x: string(),
+          y: zUndefined(),
+        })
+      )
+    ).toEqual({
+      type: 'object',
+      properties: {
+        x: {
+          type: 'string',
+        },
+      },
+      required: ['x'],
+    });
+  });
+
   it('optional type', () => {
     expect(zodTypeToSwagger(string().optional())).toEqual({ type: 'string' });
+  });
+
+  it('preprocess type', () => {
+    expect(zodTypeToSwagger(preprocess(String, string()))).toEqual({ type: 'string' });
+  });
+
+  it('refinement type', () => {
+    expect(zodTypeToSwagger(string().refine(() => true))).toEqual({
+      type: 'object',
+      description: 'Validator function',
+      additionalProperties: true,
+    });
   });
 
   it('nullable type', () => {

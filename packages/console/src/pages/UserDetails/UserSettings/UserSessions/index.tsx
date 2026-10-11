@@ -8,6 +8,7 @@ import Button from '@/ds-components/Button';
 import CopyToClipboard from '@/ds-components/CopyToClipboard';
 import FormField from '@/ds-components/FormField';
 import Table from '@/ds-components/Table';
+import { Tooltip } from '@/ds-components/Tip';
 import { type RequestError } from '@/hooks/use-api';
 import useTenantPathname from '@/hooks/use-tenant-pathname';
 
@@ -56,18 +57,24 @@ function UserSessions({ userId }: Props) {
               {
                 title: t('user_details.sessions.name_column'),
                 dataIndex: 'name',
-                colSpan: 6,
+                colSpan: 7,
                 render: ({ name }) => name ?? '-',
               },
               {
                 title: t('user_details.sessions.session_id_column'),
                 dataIndex: 'sessionId',
-                colSpan: 5,
+                colSpan: 6,
                 render: ({ sessionId }) => (
-                  <>
-                    {sessionId}
+                  <div className={styles.sessionId}>
+                    <Tooltip
+                      className={styles.tooltip}
+                      anchorClassName={styles.value}
+                      content={sessionId}
+                    >
+                      {sessionId}
+                    </Tooltip>
                     <CopyToClipboard variant="icon" value={sessionId} />
-                  </>
+                  </div>
                 ),
               },
               {
@@ -81,14 +88,16 @@ function UserSessions({ userId }: Props) {
                 dataIndex: 'action',
                 colSpan: 2,
                 render: ({ sessionId }) => (
-                  <Button
-                    title="general.manage"
-                    type="text"
-                    size="small"
-                    onClick={() => {
-                      navigate(`/users/${userId}/sessions/${sessionId}`);
-                    }}
-                  />
+                  <div className={styles.action}>
+                    <Button
+                      title="general.manage"
+                      type="text"
+                      size="small"
+                      onClick={() => {
+                        navigate(`/users/${userId}/sessions/${sessionId}`);
+                      }}
+                    />
+                  </div>
                 ),
               },
             ]}

@@ -10,6 +10,44 @@ const tenants = {
     oidc_configs: 'OIDC 設定',
     subscription: 'プランと請求',
     billing_history: '請求履歴',
+    license: 'ライセンス',
+  },
+  license: {
+    purchase_title: 'セルフホストプラン',
+    purchase_description:
+      'セルフホストプロおよびエンタープライズプランでは、Logto ブランディングの非表示、独自 UI の利用、IdP 起点の SSO、コンソールの共同管理、SAML アプリケーションの無制限利用など、有料機能を自分のインスタンスで利用できます。プランを購入してライセンスキーを取得してください。',
+    purchase_button: 'セルフホストプランを見る',
+    install_title: 'ライセンスのインストール',
+    install_description: 'セルフホストプランの購入後に受け取ったライセンスキーを貼り付けます。',
+    install_button: 'ライセンスをインストール',
+    key_field: 'ライセンスキー',
+    key_field_description:
+      'キーはインスタンス上で検証され、外部に送信されることはありません。お持ちのキーの有効期限が切れている場合は、Logto アカウントから新しいキーを取得してください。',
+    key_placeholder: 'ここにライセンスキーを貼り付けてください',
+    installed_toast: 'ライセンスをインストールしました。',
+    details_title: 'ライセンス',
+    details_description: 'このインスタンスにインストールされているライセンスと、その内容です。',
+    plan_field: 'プラン',
+    environment_field: '環境',
+    environment_production: '本番',
+    environment_non_production: '非本番',
+    expires_at_field: '有効期限',
+    installed_at_field: 'インストール日',
+    last_refreshed_at_field: '最終更新日時',
+    grace_ends_at_field: '猶予期間の終了日',
+    refresh_expired_description:
+      'ライセンスキーは {{expiresAt}} に期限切れになりました。Logto が更新を試みている間、ライセンス機能は {{graceEndsAt}} まで利用できます。',
+    refresh_refused_description:
+      'ライセンスが{{reason}}のため、更新が拒否されました。ライセンス機能は {{graceEndsAt}} まで利用できます。',
+    refusal_reason_canceled: 'キャンセル済み',
+    refusal_reason_unpaid: '未払い',
+    refusal_reason_expired: '期限切れ',
+    refusal_reason_revoked: '取り消し済み',
+    refusal_reason_unknown: '利用できない状態',
+    grace_expired_description:
+      'ライセンスの猶予期間は {{graceEndsAt}} に終了しました。このインスタンスは OSS のデフォルトに戻っています。Logto Cloud から新しいライセンスキーを取得して再インストールしてください。',
+    get_fresh_key_button: '新しいライセンスキーを取得',
+    replace_button: 'ライセンスを差し替える',
   },
   members: {
     card_title: 'Logto Cloud でテナントをより安全に管理',
@@ -36,6 +74,10 @@ const tenants = {
       created_success: 'Console operator created.',
       deleted_success: 'Console operator removed.',
     },
+    self_hosted_card_title: 'セルフホストプランでテナントをより安全に管理',
+    self_hosted_card_description:
+      '1つの管理者アカウントを共有せずに、テナントに管理者やコラボレーターを追加できます。',
+    self_hosted_card_action: 'セルフホストプランを見る',
   },
   settings: {
     title: '設定',
@@ -60,6 +102,16 @@ const tenants = {
     tenant_mfa: '多要素認証',
     tenant_mfa_description:
       'メンバーがこのテナントにアクセスするために多要素認証を設定することを要求します。',
+    oss_description: 'このインスタンスでメンバーがコンソールにアクセスする方法を管理します。',
+    tenant_mfa_confirm_title: 'すべてのメンバーに MFA を必須にしますか？',
+    tenant_mfa_confirm_description:
+      '以下のメンバーはまだ MFA を設定していません。サインイン状態は維持され、次回のサインイン時に設定を求められます：',
+    tenant_mfa_confirm_self:
+      'あなたもまだ MFA を設定していません。次回のサインインまでにアカウント設定で設定してください。',
+    tenant_mfa_confirm_button: 'MFA を必須にする',
+    tenant_mfa_setup_required:
+      'このテナントでは多要素認証が必須です。今すぐ設定してください。設定しない場合、次回のサインイン時に求められます。',
+    tenant_mfa_setup_action: 'MFA を設定',
     enterprise_sso: 'エンタープライズ SSO',
     enterprise_sso_description:
       '有料プランで利用可能です。お問い合わせいただくと、すべてのメンバーが組織のアイデンティティプロバイダーを使用して Logto Cloud コンソールにサインインできるようになります。',

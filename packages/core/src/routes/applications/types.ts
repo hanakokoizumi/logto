@@ -1,8 +1,13 @@
+import { protectedAppAdditionalScopes } from '@logto/core-kit';
 import {
   applicationCreateGuard as originalApplicationCreateGuard,
   applicationPatchGuard as originalApplicationPatchGuard,
 } from '@logto/schemas';
 import { z } from 'zod';
+
+const protectedAppAdditionalScopeGuard = z.enum(protectedAppAdditionalScopes);
+
+export const appLevelAccessControlEnabledGuard = z.boolean().optional();
 
 export const applicationCreateGuard = originalApplicationCreateGuard
   .omit({
@@ -22,6 +27,7 @@ export const applicationPatchGuard = originalApplicationPatchGuard
     protectedAppMetadata: true,
   })
   .extend({
+    appLevelAccessControlEnabled: appLevelAccessControlEnabledGuard,
     protectedAppMetadata: z
       .object({
         origin: z.string().optional(),
@@ -34,6 +40,7 @@ export const applicationPatchGuard = originalApplicationPatchGuard
             })
           )
           .optional(),
+        additionalScopes: z.array(protectedAppAdditionalScopeGuard).optional(),
       })
       .nullish(),
   });

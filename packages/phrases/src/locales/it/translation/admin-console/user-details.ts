@@ -21,6 +21,14 @@ const user_details = {
     new_password: 'Nuova password:',
     password: 'Password:',
   },
+  expire_password: {
+    button: 'Fai scadere',
+    title: 'Sei sicuro di voler far scadere questa password?',
+    content:
+      "L'utente dovrà reimpostare la password al prossimo accesso. Questa azione non può essere annullata.",
+    success: "La password dell'utente è stata contrassegnata come scaduta.",
+    not_enabled_tooltip: 'La politica di scadenza della password non è abilitata.',
+  },
   tab_settings: 'Impostazioni',
   tab_roles: 'Ruoli utente',
   tab_logs: 'Log utente',
@@ -177,7 +185,7 @@ const user_details = {
     access_created_at_column: 'Accesso creato il',
     revoke_access_title: 'Revocare accesso?',
     revoke_access_description:
-      "Questa azione revoca l'accesso dell'app all'account di questo utente su tutti i dispositivi. L'utente dovrà autorizzarla di nuovo per ripristinare l'accesso.",
+      "Questa azione revoca l'accesso dell'app all'account di questo utente su tutti i dispositivi. L'utente dovrà autorizzarla di nuovo per ripristinare l'accesso. I token di accesso già emessi potrebbero restare validi fino alla loro scadenza.",
   },
   connections: {
     title: 'Connessione',

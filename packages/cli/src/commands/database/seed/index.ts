@@ -2,19 +2,36 @@ import type { DatabasePool } from '@silverhand/slonik';
 import type { CommandModule } from 'yargs';
 
 import { createPoolAndDatabaseIfNeeded } from '../../../database.js';
+import { assertNoExistingTenantRoles, getDatabaseName } from '../../../queries/database.js';
 import { doesConfigsTableExist } from '../../../queries/logto-config.js';
 import { consoleLog, oraPromise } from '../../../utils.js';
 import { getLatestAlterationTimestamp } from '../alteration/index.js';
 import { getAlterationDirectory } from '../alteration/utils.js';
 
+import { disableAdminPwnedPasswordCheckDescription } from './options.js';
 import { createTables, seedCloud, seedTables, seedTest } from './tables.js';
+
+type SeedByPoolOptions = {
+  cloud?: boolean;
+  test?: boolean;
+  encryptBaseRole?: boolean;
+  disablePwnedPasswordCheck?: boolean;
+};
 
 export const seedByPool = async (
   pool: DatabasePool,
-  cloud = false,
-  test = false,
-  encryptBaseRole = false
+  {
+    cloud = false,
+    test = false,
+    encryptBaseRole = false,
+    disablePwnedPasswordCheck = false,
+  }: SeedByPoolOptions = {}
 ) => {
+  // Roles left behind by an old installation are a cluster-level precondition, so fail here before
+  // opening the transaction.
+  const database = await getDatabaseName(pool, true);
+  await assertNoExistingTenantRoles(pool, database);
+
   await pool.transaction(async (connection) => {
     // Check alteration scripts available in order to insert correct timestamp
     const latestTimestamp = await getLatestAlterationTimestamp();
@@ -34,7 +51,7 @@ export const seedByPool = async (
       consoleLog.info('base role password:', tableInfo.password);
     }
 
-    await seedTables(connection, latestTimestamp, cloud);
+    await seedTables(connection, latestTimestamp, cloud, { disablePwnedPasswordCheck });
 
     if (cloud) {
       await seedCloud(connection);
@@ -60,6 +77,7 @@ const seed: CommandModule<
     test?: boolean;
     'legacy-test-data'?: boolean;
     'encrypt-base-role'?: boolean;
+    dapc?: boolean;
   }
 > = {
   command: 'seed [type]',
@@ -87,8 +105,13 @@ const seed: CommandModule<
       .option('encrypt-base-role', {
         describe: 'Seed base role with password',
         type: 'boolean',
+      })
+      .option('dapc', {
+        describe: disableAdminPwnedPasswordCheckDescription,
+        alias: 'disable-admin-pwned-password-check',
+        type: 'boolean',
       }),
-  handler: async ({ swe, cloud, test, legacyTestData, encryptBaseRole }) => {
+  handler: async ({ swe, cloud, test, legacyTestData, encryptBaseRole, dapc }) => {
     const pool = await createPoolAndDatabaseIfNeeded();
 
     if (legacyTestData) {
@@ -112,7 +135,12 @@ const seed: CommandModule<
     }
 
     try {
-      await seedByPool(pool, cloud, test, encryptBaseRole);
+      await seedByPool(pool, {
+        cloud,
+        test,
+        encryptBaseRole,
+        disablePwnedPasswordCheck: dapc,
+      });
     } catch (error: unknown) {
       consoleLog.error(error);
       consoleLog.error(

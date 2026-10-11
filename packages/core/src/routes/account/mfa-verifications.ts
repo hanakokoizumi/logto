@@ -7,23 +7,26 @@ import {
   userMfaVerificationResponseGuard,
 } from '@logto/schemas';
 import { generateStandardId } from '@logto/shared';
+import { conditional } from '@silverhand/essentials';
 import { z } from 'zod';
 
-import koaGuard from '#src/middleware/koa-guard.js';
-
-import RequestError from '../../errors/RequestError/index.js';
-import { buildVerificationRecordByIdAndType } from '../../libraries/verification.js';
-import assertThat from '../../utils/assert-that.js';
-import { transpileUserMfaVerifications } from '../../utils/user.js';
+import RequestError from '#src/errors/RequestError/index.js';
+import { buildUpdatedUserLogtoConfig } from '#src/libraries/user-logto-config.js';
 import {
   generateBackupCodes,
   validateBackupCodes,
-} from '../interaction/utils/backup-code-validation.js';
+} from '#src/libraries/verification-helpers/backup-code-validation.js';
 import {
   generateTotpSecret,
   validateTotpSecret,
   validateTotpToken,
-} from '../interaction/utils/totp-validation.js';
+} from '#src/libraries/verification-helpers/totp-validation.js';
+import { buildVerificationRecordByIdAndType } from '#src/libraries/verification.js';
+import koaGuard from '#src/middleware/koa-guard.js';
+import { assertFirstPartyClient } from '#src/utils/assert-first-party-client.js';
+import assertThat from '#src/utils/assert-that.js';
+import { transpileUserMfaVerifications } from '#src/utils/user.js';
+
 import type { UserRouter, RouterInitArgs } from '../types.js';
 
 import { accountApiPrefix } from './constants.js';
@@ -83,17 +86,19 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
           codes: z.string().array(),
         }),
       ]),
-      status: [204, 400, 401, 422],
+      status: [204, 400, 401, 403, 422],
     }),
     async (ctx, next) => {
-      const { id: userId, scopes, identityVerified } = ctx.auth;
+      const { id: userId, scopes, identityVerified, clientId } = ctx.auth;
       assertThat(
         identityVerified,
         new RequestError({ code: 'verification_record.permission_denied', status: 401 })
       );
       const { fields } = ctx.accountCenter;
+      const isWebAuthn = ctx.guard.body.type === MfaFactor.WebAuthn;
+      const passkeyControl = isWebAuthn ? (fields.passkey ?? fields.mfa) : fields.mfa;
       assertThat(
-        fields.mfa === AccountCenterControlValue.Edit,
+        passkeyControl === AccountCenterControlValue.Edit,
         'account_center.field_not_editable'
       );
 
@@ -101,12 +106,16 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
         scopes.has(UserScope.Identities),
         new RequestError({ code: 'auth.unauthorized', status: 401 })
       );
+      await assertFirstPartyClient(queries, clientId);
 
       const user = await findUserById(userId);
 
       // Check sign in experience, if mfa factor is enabled
-      const { mfa } = await findDefaultSignInExperience();
-      assertThat(mfa.factors.includes(ctx.guard.body.type), 'session.mfa.mfa_factor_not_enabled');
+      const { mfa, passkeySignIn } = await findDefaultSignInExperience();
+      const isFactorEnabled = isWebAuthn
+        ? mfa.factors.includes(MfaFactor.WebAuthn) || passkeySignIn.enabled
+        : mfa.factors.includes(ctx.guard.body.type);
+      assertThat(isFactorEnabled, 'session.mfa.mfa_factor_not_enabled');
 
       switch (ctx.guard.body.type) {
         case MfaFactor.TOTP: {
@@ -135,16 +144,18 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
             );
           }
 
+          const mfaVerifications = [
+            ...user.mfaVerifications,
+            {
+              id: generateStandardId(),
+              createdAt: new Date().toISOString(),
+              type: MfaFactor.TOTP as const,
+              key: secret,
+            },
+          ];
           const updatedUser = await updateUserById(userId, {
-            mfaVerifications: [
-              ...user.mfaVerifications,
-              {
-                id: generateStandardId(),
-                createdAt: new Date().toISOString(),
-                type: MfaFactor.TOTP,
-                key: secret,
-              },
-            ],
+            mfaVerifications,
+            logtoConfig: buildUpdatedUserLogtoConfig(user, { mfa: { enabled: true } }),
           });
 
           ctx.appendDataHookContext('User.Data.Updated', { user: updatedUser });
@@ -179,16 +190,18 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
             })
           );
           const { codes } = ctx.guard.body;
+          const mfaVerifications = [
+            ...user.mfaVerifications,
+            {
+              id: generateStandardId(),
+              createdAt: new Date().toISOString(),
+              type: MfaFactor.BackupCode as const,
+              codes: codes.map((code) => ({ code })),
+            },
+          ];
           const updatedUser = await updateUserById(userId, {
-            mfaVerifications: [
-              ...user.mfaVerifications,
-              {
-                id: generateStandardId(),
-                createdAt: new Date().toISOString(),
-                type: MfaFactor.BackupCode,
-                codes: codes.map((code) => ({ code })),
-              },
-            ],
+            mfaVerifications,
+            logtoConfig: buildUpdatedUserLogtoConfig(user, { mfa: { enabled: true } }),
           });
 
           ctx.appendDataHookContext('User.Data.Updated', { user: updatedUser });
@@ -208,16 +221,22 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
 
           const bindMfa = newVerificationRecord.toBindMfa();
 
+          const mfaVerifications = [
+            ...user.mfaVerifications,
+            {
+              ...bindMfa,
+              id: generateStandardId(),
+              createdAt: new Date().toISOString(),
+              name,
+            },
+          ];
           const updatedUser = await updateUserById(userId, {
-            mfaVerifications: [
-              ...user.mfaVerifications,
-              {
-                ...bindMfa,
-                id: generateStandardId(),
-                createdAt: new Date().toISOString(),
-                name,
-              },
-            ],
+            mfaVerifications,
+            ...conditional(
+              mfa.factors.includes(MfaFactor.WebAuthn) && {
+                logtoConfig: buildUpdatedUserLogtoConfig(user, { mfa: { enabled: true } }),
+              }
+            ),
           });
 
           ctx.appendDataHookContext('User.Data.Updated', { user: updatedUser });
@@ -240,10 +259,10 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
         secret: z.string(),
         code: z.string(),
       }),
-      status: [204, 400, 401],
+      status: [204, 400, 401, 403],
     }),
     async (ctx, next) => {
-      const { id: userId, scopes, identityVerified } = ctx.auth;
+      const { id: userId, scopes, identityVerified, clientId } = ctx.auth;
       assertThat(
         identityVerified,
         new RequestError({ code: 'verification_record.permission_denied', status: 401 })
@@ -258,6 +277,7 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
         scopes.has(UserScope.Identities),
         new RequestError({ code: 'auth.unauthorized', status: 401 })
       );
+      await assertFirstPartyClient(queries, clientId);
 
       const { mfa } = await findDefaultSignInExperience();
       assertThat(mfa.factors.includes(MfaFactor.TOTP), 'session.mfa.mfa_factor_not_enabled');
@@ -286,14 +306,15 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
         ({ type }) => type === MfaFactor.TOTP
       );
 
+      const mfaVerifications = existingTotpVerification
+        ? user.mfaVerifications.map((mfaVerification) =>
+            mfaVerification.id === existingTotpVerification.id ? totpVerification : mfaVerification
+          )
+        : [...user.mfaVerifications, totpVerification];
+
       const updatedUser = await updateUserById(userId, {
-        mfaVerifications: existingTotpVerification
-          ? user.mfaVerifications.map((mfaVerification) =>
-              mfaVerification.id === existingTotpVerification.id
-                ? totpVerification
-                : mfaVerification
-            )
-          : [...user.mfaVerifications, totpVerification],
+        mfaVerifications,
+        logtoConfig: buildUpdatedUserLogtoConfig(user, { mfa: { enabled: true } }),
       });
 
       ctx.appendDataHookContext('User.Data.Updated', { user: updatedUser });
@@ -380,18 +401,19 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
       body: z.object({
         name: z.string(),
       }),
-      status: [200, 400, 401],
+      status: [200, 400, 401, 403],
     }),
     async (ctx, next) => {
-      const { id: userId, scopes, identityVerified } = ctx.auth;
+      const { id: userId, scopes, identityVerified, clientId } = ctx.auth;
       assertThat(
         identityVerified,
         new RequestError({ code: 'verification_record.permission_denied', status: 401 })
       );
       const { name } = ctx.guard.body;
       const { fields } = ctx.accountCenter;
+      const passkeyControl = fields.passkey ?? fields.mfa;
       assertThat(
-        fields.mfa === AccountCenterControlValue.Edit,
+        passkeyControl === AccountCenterControlValue.Edit,
         'account_center.field_not_editable'
       );
 
@@ -399,6 +421,7 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
         scopes.has(UserScope.Identities),
         new RequestError({ code: 'auth.unauthorized', status: 401 })
       );
+      await assertFirstPartyClient(queries, clientId);
 
       const user = await findUserById(userId);
       const mfaVerification = user.mfaVerifications.find(
@@ -430,23 +453,19 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
       params: z.object({
         verificationId: z.string(),
       }),
-      status: [204, 400, 401],
+      status: [204, 400, 401, 403],
     }),
     async (ctx, next) => {
-      const { id: userId, scopes, identityVerified } = ctx.auth;
+      const { id: userId, scopes, identityVerified, clientId } = ctx.auth;
       assertThat(
         identityVerified,
         new RequestError({ code: 'verification_record.permission_denied', status: 401 })
-      );
-      const { fields } = ctx.accountCenter;
-      assertThat(
-        fields.mfa === AccountCenterControlValue.Edit,
-        'account_center.field_not_editable'
       );
       assertThat(
         scopes.has(UserScope.Identities),
         new RequestError({ code: 'auth.unauthorized', status: 401 })
       );
+      await assertFirstPartyClient(queries, clientId);
 
       const user = await findUserById(userId);
       const mfaVerification = user.mfaVerifications.find(
@@ -454,10 +473,19 @@ export default function mfaVerificationsRoutes<T extends UserRouter>(
       );
       assertThat(mfaVerification, 'verification_record.not_found');
 
+      const { fields } = ctx.accountCenter;
+      const isWebAuthnVerification = mfaVerification.type === MfaFactor.WebAuthn;
+      const deleteControl = isWebAuthnVerification ? (fields.passkey ?? fields.mfa) : fields.mfa;
+      assertThat(
+        deleteControl === AccountCenterControlValue.Edit,
+        'account_center.field_not_editable'
+      );
+
+      const mfaVerifications = user.mfaVerifications.filter(
+        (mfaVerification) => mfaVerification.id !== ctx.guard.params.verificationId
+      );
       const updatedUser = await updateUserById(userId, {
-        mfaVerifications: user.mfaVerifications.filter(
-          (mfaVerification) => mfaVerification.id !== ctx.guard.params.verificationId
-        ),
+        mfaVerifications,
       });
 
       ctx.appendDataHookContext('User.Data.Updated', { user: updatedUser });

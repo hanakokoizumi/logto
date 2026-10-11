@@ -26,6 +26,25 @@ const profile = {
     male: '男性',
     prefer_not_to_say: '答えたくない',
   },
+  checkbox_value: {
+    checked: 'はい',
+    unchecked: 'いいえ',
+  },
+  avatar_upload: {
+    upload: 'アップロード',
+    remove: '削除',
+    uploading: 'アップロード中...',
+    hint: '推奨サイズ 1:1、最大 {{limit}}。',
+    error_file_type: 'ファイル形式は {{extensions}} である必要があります。',
+    error_file_size: 'ファイルサイズは {{limit}} を超えられません。',
+    error_storage_not_configured:
+      '写真をアップロードできません。しばらくしてからもう一度お試しください。',
+    error_upload: '写真のアップロードに失敗しました。もう一度お試しください。',
+    error_save: '写真を保存できませんでした。もう一度お試しください。',
+    crop_title: '写真を切り抜く',
+    zoom: 'ズーム',
+    error_crop: '画像のトリミングに失敗しました。もう一度お試しください。',
+  },
 };
 
 export default Object.freeze(profile);

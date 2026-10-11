@@ -26,6 +26,24 @@ const profile = {
     male: 'Чоловіча',
     prefer_not_to_say: 'Волію не говорити',
   },
+  checkbox_value: {
+    checked: 'Так',
+    unchecked: 'Ні',
+  },
+  avatar_upload: {
+    upload: 'Завантажити',
+    remove: 'Видалити',
+    uploading: 'Завантаження...',
+    hint: 'Рекомендований розмір 1:1, до {{limit}}.',
+    error_file_type: 'Тип файлу має бути {{extensions}}.',
+    error_file_size: 'Розмір файлу не повинен перевищувати {{limit}}.',
+    error_storage_not_configured: 'Не вдалося завантажити фото. Спробуйте пізніше.',
+    error_upload: 'Не вдалося завантажити фото. Спробуйте ще раз.',
+    error_save: 'Не вдалося зберегти ваше фото. Спробуйте ще раз.',
+    crop_title: 'Обрізати фото',
+    zoom: 'Масштаб',
+    error_crop: 'Не вдалося обрізати зображення. Спробуйте ще раз.',
+  },
 };
 
 export default Object.freeze(profile);

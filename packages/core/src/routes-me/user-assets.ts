@@ -37,14 +37,17 @@ export default function userAssetsRoutes<T extends AuthedMeRouter>(...[router]: 
     }),
     async (ctx, next) => {
       const { storageProviderConfig } = SystemContext.shared;
+      const isExperienceAvatarUploadEnabled = true;
       const status = storageProviderConfig
         ? {
             status: 'ready',
             allowUploadMimeTypes,
             maxUploadFileSize,
+            isExperienceAvatarUploadEnabled,
           }
         : {
             status: 'not_configured',
+            isExperienceAvatarUploadEnabled,
           };
 
       ctx.body = status;

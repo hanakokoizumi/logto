@@ -1,4 +1,9 @@
-import { defaultTenantId, MfaFactor, UsersPasswordEncryptionMethod } from '@logto/schemas';
+import {
+  defaultTenantId,
+  MfaFactor,
+  type User,
+  UsersPasswordEncryptionMethod,
+} from '@logto/schemas';
 import { createMockUtils } from '@logto/shared/esm';
 
 import { mockResource, mockAdminUserRole, mockScope } from '#src/__mocks__/index.js';
@@ -33,8 +38,11 @@ mockEsm('#src/utils/password.js', () => ({
   legacyVerify: jest.fn().mockResolvedValue(true),
 }));
 
+const { argon2Verify } = await import('hash-wasm');
+
 const { MockQueries } = await import('#src/test-utils/tenant.js');
 const { createUserLibrary } = await import('./user.js');
+const { decoyArgon2Hash } = await import('./user-password-verification.js');
 const { encryptUserPassword } = await import('./user.utils.js');
 
 const hasUserWithId = jest.fn();
@@ -100,6 +108,38 @@ describe('encryptUserPassword()', () => {
 describe('verifyUserPassword()', () => {
   const { verifyUserPassword } = createUserLibrary(defaultTenantId, queries);
 
+  afterEach(() => {
+    jest.mocked(argon2Verify).mockClear();
+  });
+
+  describe('missing user or password', () => {
+    it('rejects with invalid credentials when user is null', async () => {
+      await expect(verifyUserPassword(null, 'password')).rejects.toThrowError(
+        new RequestError({ code: 'session.invalid_credentials', status: 422 })
+      );
+      expect(argon2Verify).toHaveBeenCalledWith({
+        password: 'password',
+        hash: decoyArgon2Hash,
+      });
+    });
+
+    it('rejects with invalid credentials when user has no password configured', async () => {
+      const userWithoutPassword = {
+        ...mockUser,
+        passwordEncrypted: null,
+        passwordEncryptionMethod: null,
+      };
+
+      await expect(verifyUserPassword(userWithoutPassword, 'password')).rejects.toThrowError(
+        new RequestError({ code: 'session.invalid_credentials', status: 422 })
+      );
+      expect(argon2Verify).toHaveBeenCalledWith({
+        password: 'password',
+        hash: decoyArgon2Hash,
+      });
+    });
+  });
+
   describe('Argon2i', () => {
     it('resolves when password is correct', async () => {
       await expect(verifyUserPassword(mockUser, 'password')).resolves.not.toThrowError();
@@ -108,6 +148,10 @@ describe('verifyUserPassword()', () => {
     it('rejects when password is incorrect', async () => {
       await expect(verifyUserPassword(mockUser, 'wrong')).rejects.toThrowError(
         new RequestError({ code: 'session.invalid_credentials', status: 422 })
+      );
+      expect(argon2Verify).toHaveBeenCalledTimes(1);
+      expect(argon2Verify).not.toHaveBeenCalledWith(
+        expect.objectContaining({ hash: decoyArgon2Hash })
       );
     });
   });
@@ -146,6 +190,10 @@ describe('verifyUserPassword()', () => {
       await expect(verifyUserPassword(user, 'wrong')).rejects.toThrowError(
         new RequestError({ code: 'session.invalid_credentials', status: 422 })
       );
+      expect(argon2Verify).toHaveBeenCalledTimes(1);
+      expect(argon2Verify).not.toHaveBeenCalledWith(
+        expect.objectContaining({ hash: decoyArgon2Hash })
+      );
     });
   });
 
@@ -163,6 +211,10 @@ describe('verifyUserPassword()', () => {
       await expect(verifyUserPassword(user, 'wrong')).rejects.toThrowError(
         new RequestError({ code: 'session.invalid_credentials', status: 422 })
       );
+      expect(argon2Verify).toHaveBeenCalledWith({
+        password: 'wrong',
+        hash: decoyArgon2Hash,
+      });
     });
   });
 
@@ -180,6 +232,10 @@ describe('verifyUserPassword()', () => {
       await expect(verifyUserPassword(user, 'wrong')).rejects.toThrowError(
         new RequestError({ code: 'session.invalid_credentials', status: 422 })
       );
+      expect(argon2Verify).toHaveBeenCalledWith({
+        password: 'wrong',
+        hash: decoyArgon2Hash,
+      });
     });
   });
 
@@ -197,6 +253,10 @@ describe('verifyUserPassword()', () => {
       await expect(verifyUserPassword(user, 'wrong')).rejects.toThrowError(
         new RequestError({ code: 'session.invalid_credentials', status: 422 })
       );
+      expect(argon2Verify).toHaveBeenCalledWith({
+        password: 'wrong',
+        hash: decoyArgon2Hash,
+      });
     });
   });
 
@@ -230,6 +290,9 @@ describe('verifyUserPassword()', () => {
         passwordEncrypted: expect.stringContaining('argon2'),
         passwordEncryptionMethod: UsersPasswordEncryptionMethod.Argon2i,
       });
+      const lastCall = updateUserById.mock.calls.at(-1) as [string, Partial<User>] | undefined;
+      expect(lastCall).toBeDefined();
+      expect(lastCall?.[1].passwordUpdatedAt).toBeUndefined();
     });
   });
 });

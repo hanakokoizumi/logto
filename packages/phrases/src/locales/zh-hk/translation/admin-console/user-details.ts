@@ -19,6 +19,13 @@ const user_details = {
     new_password: '新密碼：',
     password: '密碼：',
   },
+  expire_password: {
+    button: '過期',
+    title: '確定要使此密碼過期嗎？',
+    content: '用戶將被要求在下次登錄時重置密碼。此操作無法撤銷。',
+    success: '用戶的密碼已標記為過期。',
+    not_enabled_tooltip: '密碼過期策略未啟用。',
+  },
   tab_settings: '設置',
   tab_roles: '用戶角色',
   tab_logs: '用戶日誌',
@@ -162,7 +169,7 @@ const user_details = {
     access_created_at_column: '授權建立時間',
     revoke_access_title: '要撤銷存取權嗎？',
     revoke_access_description:
-      '此操作會撤銷該應用程式在所有裝置上存取此使用者帳戶的權限。使用者必須重新授權才能恢復存取。',
+      '此操作會撤銷該應用程式在所有裝置上存取此使用者帳戶的權限。使用者必須重新授權才能恢復存取。先前已簽發的存取權杖可能在過期前仍然有效。',
   },
   connections: {
     title: '連接',

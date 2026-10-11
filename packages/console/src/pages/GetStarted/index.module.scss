@@ -16,7 +16,6 @@
 .subtitle {
   font: var(--font-body-2);
   color: var(--color-text-secondary);
-  margin-bottom: _.unit(-3);
 }
 
 .bodyText {
@@ -28,6 +27,10 @@
   display: flex;
   flex-direction: column;
   gap: _.unit(1);
+
+  .subtitle {
+    margin-bottom: _.unit(-3);
+  }
 }
 
 .developActions {
@@ -151,7 +154,9 @@
 
 .ossCloudBannerActions {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: _.unit(2);
   margin-left: auto;
   margin-right: _.unit(4.5);
   flex-shrink: 0;
@@ -161,6 +166,11 @@
   width: 20px;
   height: 20px;
   opacity: 70%;
+}
+
+.selfHostedPlansLink {
+  white-space: nowrap;
+  color: var(--color-text-secondary);
 }
 
 .dismissButton {

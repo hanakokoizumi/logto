@@ -7,15 +7,14 @@ const account_center = {
     title: 'الحساب',
     security_title: 'الأمان',
     security_description: 'غيّر إعدادات حسابك هنا لضمان أمان حسابك.',
-    /** UNTRANSLATED */
-    profile_title: 'Personal info',
-    /** UNTRANSLATED */
-    profile_description: 'Change your personal information here.',
-    /** UNTRANSLATED */
-    sidebar_personal_info: 'Personal info',
-    /** UNTRANSLATED */
-    sidebar_security: 'Security',
+    profile_title: 'المعلومات الشخصية',
+    profile_description: 'قم بتغيير معلوماتك الشخصية هنا.',
+    sidebar_personal_info: 'المعلومات الشخصية',
+    sidebar_security: 'الأمان',
+    sidebar_sessions: 'الجلسات',
     support: 'الدعم',
+    user_menu: 'قائمة المستخدم',
+    sign_out: 'تسجيل الخروج',
   },
   verification: {
     title: 'التحقق الأمني',
@@ -68,6 +67,7 @@ const account_center = {
   username: {
     title: 'تعيين اسم المستخدم',
     description: 'يجب أن يحتوي اسم المستخدم على أحرف وأرقام وشرطات سفلية فقط.',
+    policy_description: '{{requirements}}',
     success: 'تم تحديث اسم المستخدم بنجاح.',
   },
   security: {
@@ -95,7 +95,6 @@ const account_center = {
     backup_codes_count_other: '{{count}} رموز متبقية',
     view: 'عرض',
     manage: 'إدارة',
-    turn_on_2_step_verification: 'تفعيل التحقق بخطوتين',
     turn_on_2_step_verification_description:
       'أضف طبقة أمان إضافية. ستتم مطالبتك بخطوة تحقق ثانية عند تسجيل الدخول.',
     turn_off_2_step_verification: 'إيقاف التحقق بخطوتين',
@@ -104,6 +103,9 @@ const account_center = {
     disable_2_step_verification: 'تعطيل',
     no_verification_method_warning:
       'لم تقم بإضافة طريقة تحقق ثانية. أضف طريقة واحدة على الأقل لتفعيل التحقق بخطوتين عند تسجيل الدخول.',
+    passkey_sign_in_prompt: 'مطالبة بإعداد مفتاح مرور',
+    passkey_sign_in_prompt_description:
+      'عند التفعيل، سيُطلب منك إعداد مفتاح مرور لتسجيل دخول أسرع وأكثر أمانًا.',
     account_removal: 'حذف الحساب',
     delete_your_account: 'احذف حسابك',
     delete_account: 'حذف الحساب',
@@ -119,6 +121,21 @@ const account_center = {
     email_removed: 'تمت إزالة عنوان البريد الإلكتروني بنجاح.',
     phone_removed: 'تمت إزالة رقم الهاتف بنجاح.',
     username_removed: 'تمت إزالة اسم المستخدم بنجاح.',
+    trusted_devices: {
+      title: 'الأجهزة الموثوقة للمصادقة متعددة العوامل',
+      current_device: 'الجهاز الحالي',
+      expires_on: 'تنتهي الصلاحية في {{date}}',
+      unknown_location: 'موقع غير معروف',
+      remove: 'إزالة',
+      removed: 'تمت إزالة الجهاز الموثوق بنجاح.',
+      loading: 'جارٍ التحميل...',
+      empty: 'لا توجد أجهزة موثوقة.',
+      load_failed: 'فشل تحميل الأجهزة الموثوقة. يُرجى المحاولة مرة أخرى.',
+      retry: 'إعادة المحاولة',
+      remove_confirmation_title: 'هل تريد إزالة الجهاز الموثوق؟',
+      remove_confirmation_description:
+        'ستحتاج إلى إكمال المصادقة متعددة العوامل مرة أخرى على هذا الجهاز في المرة القادمة التي تسجل فيها الدخول. ستظل جلستك الحالية نشطة.',
+    },
   },
   social: {
     linked: 'تم ربط {{connector}} بنجاح.',
@@ -248,6 +265,30 @@ const account_center = {
     name_passkey_description:
       'لقد نجحت في التحقق من هذا الجهاز للمصادقة بخطوتين. خصص الاسم للتعرف عليه إذا كان لديك مفاتيح متعددة.',
     name_input_label: 'الاسم',
+  },
+  sessions: {
+    page_title: 'الجلسات',
+    page_description: 'إدارة جلساتك النشطة والتطبيقات المعتمدة من جهات خارجية.',
+    title: 'الجلسات',
+    current_session: 'الجلسة الحالية',
+    signed_in_at: 'تم تسجيل الدخول {{date}}',
+    revoke_session: 'تسجيل الخروج',
+    revoke_session_title: 'تسجيل الخروج من الجلسة',
+    revoke_session_description:
+      'سيؤدي هذا إلى تسجيل الخروج من الجلسة وإلغاء جميع الوصول المرتبط. هل أنت متأكد أنك تريد المتابعة؟',
+    no_other_sessions: 'لا توجد جلسات نشطة أخرى.',
+    loading: 'جارٍ التحميل...',
+    third_party_apps_title: 'تطبيقات الطرف الثالث',
+    no_third_party_apps: 'لا توجد تطبيقات طرف ثالث معتمدة.',
+    third_party_apps_load_failed: 'فشل تحميل تطبيقات الطرف الثالث. يُرجى المحاولة مرة أخرى.',
+    granted_at: 'تم التفويض {{date}}',
+    dynamic_app: 'تطبيق ديناميكي',
+    client_id: 'معرف العميل: {{clientId}}',
+    revoke_grant: 'إزالة',
+    revoke_grant_title: 'إزالة وصول تطبيق الطرف الثالث',
+    revoke_grant_description:
+      'سيؤدي هذا إلى إلغاء الوصول الممنوح لهذا التطبيق. قد تظل رموز الوصول التي أُصدرت سابقًا صالحة حتى انتهاء صلاحيتها. هل أنت متأكد أنك تريد المتابعة؟',
+    revoke_grant_failed: 'فشل إلغاء بعض التفويضات. يرجى المحاولة مرة أخرى.',
   },
 };
 

@@ -1,7 +1,12 @@
 /* eslint-disable max-lines */
+import { defaultUsernamePolicy } from '@logto/core-kit';
 import {
+  ForgotPasswordMethod,
   MfaFactor,
   MfaPolicy,
+  resolveLicenseQuota,
+  type AccountCenter,
+  type LicenseQuota,
   type SignInExperience,
   type CreateSignInExperience,
 } from '@logto/schemas';
@@ -18,16 +23,29 @@ import {
   mockSignUp,
   mockSignIn,
   mockLanguageInfo,
+  mockAliyunDmConnector,
   mockAliyunSmsConnector,
   mockTermsOfUseUrl,
   mockPrivacyPolicyUrl,
   mockDemoSocialConnector,
 } from '#src/__mocks__/index.js';
+import { EnvSet } from '#src/env-set/index.js';
+import LicenseReader from '#src/license/LicenseReader.js';
+import { buildLicensePayload } from '#src/test-utils/license.js';
 import { MockTenant } from '#src/test-utils/tenant.js';
 import { createRequester } from '#src/utils/test-utils.js';
 
 const { jest } = import.meta;
 const { mockEsmWithActual } = createMockUtils(jest);
+
+type NormalizableProfileFields =
+  | SignInExperience['signUpProfileFields']
+  | AccountCenter['profileFields']
+  | undefined;
+type NormalizeProfileFields = <ProfileFields extends NormalizableProfileFields>(
+  profileFields: ProfileFields
+) => Promise<ProfileFields | undefined>;
+type NormalizeProfileFieldsMock = jest.MockedFunction<NormalizeProfileFields>;
 
 const logtoConnectors = [
   mockFacebookConnector,
@@ -76,24 +94,25 @@ const signInExperienceRequester = createRequester({
   authedRoutes: signInExperiencesRoutes,
   tenantContext,
 });
+const originalIsDevFeaturesEnabled = EnvSet.values.isDevFeaturesEnabled;
+const originalIsCloud = EnvSet.values.isCloud;
+const originalIsProduction = EnvSet.values.isProduction;
 
-const createDevFeaturesDisabledRequester = async () => {
-  jest.resetModules();
-
-  await mockEsmWithActual('#src/env-set/index.js', () => ({
-    EnvSet: {
-      values: {
-        isDevFeaturesEnabled: false,
-        isCloud: false,
-        isProduction: false,
-        isUnitTest: true,
-      },
-    },
-  }));
+const createDevFeaturesDisabledRequester = (
+  signInExperience: SignInExperience = mockSignInExperience
+) => {
+  // Toggle EnvSet in place instead of resetting modules and re-importing the route graph,
+  // which is slow enough to hit the default Jest timeout on CI.
+  // eslint-disable-next-line @silverhand/fp/no-mutation -- Toggle EnvSet in this route test without reloading mocked modules.
+  (EnvSet.values as { isDevFeaturesEnabled: boolean }).isDevFeaturesEnabled = false;
+  // eslint-disable-next-line @silverhand/fp/no-mutation -- Toggle EnvSet in this route test without reloading mocked modules.
+  (EnvSet.values as { isCloud: boolean }).isCloud = false;
+  // eslint-disable-next-line @silverhand/fp/no-mutation -- Toggle EnvSet in this route test without reloading mocked modules.
+  (EnvSet.values as { isProduction: boolean }).isProduction = false;
 
   const updateDefaultSignInExperience = jest.fn(
     async (data: Partial<CreateSignInExperience>): Promise<SignInExperience> => ({
-      ...mockSignInExperience,
+      ...signInExperience,
       ...data,
     })
   );
@@ -103,7 +122,7 @@ const createDevFeaturesDisabledRequester = async () => {
     {
       signInExperiences: {
         updateDefaultSignInExperience,
-        findDefaultSignInExperience: jest.fn().mockResolvedValue(mockSignInExperience),
+        findDefaultSignInExperience: jest.fn().mockResolvedValue(signInExperience),
       },
       customPhrases: { findAllCustomLanguageTags: async () => [] },
     },
@@ -111,9 +130,8 @@ const createDevFeaturesDisabledRequester = async () => {
     { signInExperiences: { validateLanguageInfo: jest.fn() } }
   );
 
-  const routes = await pickDefault(import('./index.js'));
   const requester = createRequester({
-    authedRoutes: routes,
+    authedRoutes: signInExperiencesRoutes,
     tenantContext: tenant,
   });
 
@@ -121,10 +139,10 @@ const createDevFeaturesDisabledRequester = async () => {
 };
 
 const createSignUpProfileFieldsRequester = (
-  normalizeSignUpProfileFields = jest.fn(
-    async (signUpProfileFields: SignInExperience['signUpProfileFields'] | undefined) =>
-      signUpProfileFields
-  )
+  normalizeProfileFields: NormalizeProfileFieldsMock = jest.fn(
+    async <ProfileFields extends NormalizableProfileFields>(profileFields: ProfileFields) =>
+      profileFields
+  ) as NormalizeProfileFieldsMock
 ) => {
   const updateDefaultSignInExperience = jest.fn(
     async (data: Partial<CreateSignInExperience>): Promise<SignInExperience> => ({
@@ -145,7 +163,7 @@ const createSignUpProfileFieldsRequester = (
     { getLogtoConnectors: jest.fn().mockResolvedValue([]) },
     {
       signInExperiences: { validateLanguageInfo: jest.fn() },
-      customProfileFields: { normalizeSignUpProfileFields },
+      customProfileFields: { normalizeProfileFields },
     }
   );
 
@@ -154,7 +172,69 @@ const createSignUpProfileFieldsRequester = (
     tenantContext: tenant,
   });
 
-  return { requester, updateDefaultSignInExperience, normalizeSignUpProfileFields };
+  return { requester, updateDefaultSignInExperience, normalizeProfileFields };
+};
+
+/**
+ * Install a license on the self-hosted deployment under test, granting the given entitlements.
+ * Stubbing the reader keeps the database and the signature check out of these route tests.
+ */
+const installLicense = (quota: Partial<LicenseQuota>) => {
+  const payload = buildLicensePayload({ quota });
+
+  jest.spyOn(LicenseReader.shared, 'read').mockResolvedValue({
+    payload,
+    installedAt: new Date().toISOString(),
+    quota: resolveLicenseQuota(payload.quota),
+    lastRefreshedAt: new Date().toISOString(),
+    graceEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+  });
+};
+
+const createCustomUiCspRequester = async ({
+  isDevFeaturesEnabled = true,
+  isCloud = true,
+  isProduction = false,
+} = {}) => {
+  // eslint-disable-next-line @silverhand/fp/no-mutation -- Toggle EnvSet in this route test without reloading mocked modules.
+  (EnvSet.values as { isDevFeaturesEnabled: boolean }).isDevFeaturesEnabled = isDevFeaturesEnabled;
+  // eslint-disable-next-line @silverhand/fp/no-mutation -- Toggle EnvSet in this route test without reloading mocked modules.
+  (EnvSet.values as { isCloud: boolean }).isCloud = isCloud;
+  // eslint-disable-next-line @silverhand/fp/no-mutation -- Toggle EnvSet in this route test without reloading mocked modules.
+  (EnvSet.values as { isProduction: boolean }).isProduction = isProduction;
+
+  const updateDefaultSignInExperience = jest.fn(
+    async (data: Partial<CreateSignInExperience>): Promise<SignInExperience> => ({
+      ...mockSignInExperience,
+      ...data,
+    })
+  );
+  const guardTenantUsageByKey = jest.fn(async () => {
+    await Promise.resolve();
+  });
+  const reportSubscriptionUpdatesUsage = jest.fn(async () => {
+    await Promise.resolve();
+  });
+  const requester = createRequester({
+    authedRoutes: signInExperiencesRoutes,
+    tenantContext: new MockTenant(
+      undefined,
+      {
+        signInExperiences: {
+          updateDefaultSignInExperience,
+          findDefaultSignInExperience: jest.fn().mockResolvedValue(mockSignInExperience),
+        },
+        customPhrases: { findAllCustomLanguageTags: async () => [] },
+      },
+      { getLogtoConnectors: jest.fn().mockResolvedValue([]) },
+      {
+        signInExperiences: { validateLanguageInfo: jest.fn() },
+        quota: { guardTenantUsageByKey, reportSubscriptionUpdatesUsage },
+      }
+    ),
+  });
+
+  return { requester, updateDefaultSignInExperience, guardTenantUsageByKey };
 };
 
 describe('GET /sign-in-exp', () => {
@@ -173,6 +253,12 @@ describe('GET /sign-in-exp', () => {
 describe('PATCH /sign-in-exp', () => {
   afterEach(() => {
     mockDeleteConnectorById.mockClear();
+
+    mockGetLogtoConnectors.mockReset();
+    mockGetLogtoConnectors.mockImplementation(async () => logtoConnectors);
+
+    findDefaultSignInExperience.mockReset();
+    findDefaultSignInExperience.mockImplementation(async () => mockSignInExperience);
   });
 
   it('should update social connector targets in correct sorting order', async () => {
@@ -396,6 +482,134 @@ describe('PATCH /sign-in-exp', () => {
     });
   });
 
+  it('should reject password expiration updates with an invalid validPeriodDays', async () => {
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 0,
+      },
+    });
+
+    expect(response).toMatchObject({
+      status: 400,
+    });
+  });
+
+  it('should accept enabled password expiration updates', async () => {
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 30,
+      },
+    });
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        ...mockSignInExperience,
+        passwordExpiration: {
+          enabled: true,
+          validPeriodDays: 30,
+        },
+      },
+    });
+  });
+
+  it('should stamp enabledAt when enabling the policy', async () => {
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 30,
+      },
+    });
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        passwordExpiration: {
+          enabled: true,
+          validPeriodDays: 30,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- jest `expect.any` is typed as `any`
+          enabledAt: expect.any(Number),
+        },
+      },
+    });
+  });
+
+  it('should preserve the stored enabledAt and ignore a client-provided one', async () => {
+    findDefaultSignInExperience.mockResolvedValueOnce({
+      ...mockSignInExperience,
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 30,
+        enabledAt: 1_700_000_000_000,
+      },
+    });
+
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 60,
+        // Client-provided value must be ignored; the stored anchor is preserved.
+        enabledAt: 1,
+      },
+    });
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        passwordExpiration: {
+          enabled: true,
+          validPeriodDays: 60,
+          enabledAt: 1_700_000_000_000,
+        },
+      },
+    });
+  });
+
+  it('should ignore a client-provided enabledAt when enabling the policy', async () => {
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 30,
+        // The disabled-to-enabled transition stamps a fresh server timestamp, not this value.
+        enabledAt: 1,
+      },
+    });
+
+    expect(response.status).toBe(200);
+
+    const body = response.body as { passwordExpiration: { enabledAt: number } };
+    expect(body.passwordExpiration.enabledAt).not.toBe(1);
+    expect(body.passwordExpiration.enabledAt).toBeGreaterThan(1);
+  });
+
+  it('should normalize disabled password expiration updates', async () => {
+    findDefaultSignInExperience.mockResolvedValueOnce({
+      ...mockSignInExperience,
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 30,
+      },
+    });
+
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      passwordExpiration: {
+        enabled: false,
+      },
+    });
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        ...mockSignInExperience,
+        passwordExpiration: {
+          enabled: false,
+        },
+      },
+    });
+  });
+
   it('should guard support email field format', async () => {
     const exception = await signInExperienceRequester
       .patch('/sign-in-exp')
@@ -481,20 +695,184 @@ describe('PATCH /sign-in-exp', () => {
       },
     });
   });
+
+  it('should accept email forgot password method when email connector is available', async () => {
+    mockGetLogtoConnectors.mockResolvedValueOnce([...logtoConnectors, mockAliyunDmConnector]);
+
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      forgotPasswordMethods: [ForgotPasswordMethod.EmailVerificationCode],
+    });
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        ...mockSignInExperience,
+        forgotPasswordMethods: [ForgotPasswordMethod.EmailVerificationCode],
+      },
+    });
+  });
+
+  it('should reject email forgot password method when email connector is not available', async () => {
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      forgotPasswordMethods: [ForgotPasswordMethod.EmailVerificationCode],
+    });
+
+    expect(response).toMatchObject({
+      status: 400,
+    });
+  });
+
+  it('should accept phone forgot password method when phone connector is available', async () => {
+    mockGetLogtoConnectors.mockResolvedValueOnce([...logtoConnectors, mockAliyunSmsConnector]);
+
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      forgotPasswordMethods: [ForgotPasswordMethod.PhoneVerificationCode],
+    });
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        ...mockSignInExperience,
+        forgotPasswordMethods: [ForgotPasswordMethod.PhoneVerificationCode],
+      },
+    });
+  });
+
+  it('should accept custom allowlist in email blocklist policy', async () => {
+    const emailBlocklistPolicy = {
+      customAllowlist: ['foo@bar.com', '@example.com', 'foo@bar.com'],
+      customBlocklist: ['@blocked.com'],
+    };
+
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      emailBlocklistPolicy,
+    });
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        ...mockSignInExperience,
+        emailBlocklistPolicy: {
+          customAllowlist: ['foo@bar.com', '@example.com'],
+          customBlocklist: ['@blocked.com'],
+        },
+      },
+    });
+  });
+
+  it('should reject phone forgot password method when phone connector is not available', async () => {
+    mockGetLogtoConnectors.mockResolvedValueOnce([]);
+
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      forgotPasswordMethods: [ForgotPasswordMethod.PhoneVerificationCode],
+    });
+
+    expect(response).toMatchObject({
+      status: 400,
+    });
+  });
+
+  it('should reject password expiration when forgot password is explicitly disabled', async () => {
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      forgotPasswordMethods: [],
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 30,
+      },
+    });
+
+    expect(response).toMatchObject({
+      status: 422,
+    });
+  });
+
+  it('should accept password expiration when forgot password is available', async () => {
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 30,
+      },
+    });
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        ...mockSignInExperience,
+        passwordExpiration: {
+          enabled: true,
+          validPeriodDays: 30,
+        },
+      },
+    });
+  });
+
+  it('should reject disabling forgot password methods when password expiration is already enabled', async () => {
+    findDefaultSignInExperience.mockResolvedValueOnce({
+      ...mockSignInExperience,
+      passwordExpiration: {
+        enabled: true,
+        validPeriodDays: 30,
+      },
+    });
+
+    const response = await signInExperienceRequester.patch('/sign-in-exp').send({
+      forgotPasswordMethods: [],
+    });
+
+    expect(response).toMatchObject({
+      status: 422,
+    });
+  });
 });
 
 describe('sign-in experience routes with dev features disabled', () => {
-  it('should include adaptive mfa in GET response', async () => {
-    const { requester } = await createDevFeaturesDisabledRequester();
+  afterEach(() => {
+    // eslint-disable-next-line @silverhand/fp/no-mutation -- Restore EnvSet after each feature-gate test.
+    (EnvSet.values as { isDevFeaturesEnabled: boolean }).isDevFeaturesEnabled =
+      originalIsDevFeaturesEnabled;
+    // eslint-disable-next-line @silverhand/fp/no-mutation -- Restore EnvSet after each feature-gate test.
+    (EnvSet.values as { isCloud: boolean }).isCloud = originalIsCloud;
+    // eslint-disable-next-line @silverhand/fp/no-mutation -- Restore EnvSet after each feature-gate test.
+    (EnvSet.values as { isProduction: boolean }).isProduction = originalIsProduction;
+  });
+
+  it('should include trusted-device policy in GET response', async () => {
+    const trustedDevice = { enabled: true, durationDays: 90 };
+    const { requester } = createDevFeaturesDisabledRequester({
+      ...mockSignInExperience,
+      trustedDevice,
+    });
 
     const response = await requester.get('/sign-in-exp');
 
     expect(response.status).toEqual(200);
-    expect(response.body).toEqual(mockSignInExperience);
+    expect(response.body).toEqual(expect.objectContaining({ trustedDevice }));
+  });
+
+  it('should persist trusted-device policy updates', async () => {
+    const { requester, updateDefaultSignInExperience } = createDevFeaturesDisabledRequester();
+    const trustedDevice = { enabled: true, durationDays: 365 };
+
+    const response = await requester.patch('/sign-in-exp').send({ trustedDevice });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalledWith({ trustedDevice });
+    expect(response.body).toEqual(expect.objectContaining({ trustedDevice }));
+  });
+
+  it('should include adaptive mfa in GET response', async () => {
+    const { requester } = createDevFeaturesDisabledRequester();
+
+    const response = await requester.get('/sign-in-exp');
+
+    expect(response.status).toEqual(200);
+    expect(response.body).toEqual(
+      expect.objectContaining({ adaptiveMfa: mockSignInExperience.adaptiveMfa })
+    );
   });
 
   it('should persist adaptive mfa updates when the payload is otherwise valid', async () => {
-    const { requester, updateDefaultSignInExperience } = await createDevFeaturesDisabledRequester();
+    const { requester, updateDefaultSignInExperience } = createDevFeaturesDisabledRequester();
 
     const adaptiveMfa = { enabled: true };
     const mfa = {
@@ -503,25 +881,50 @@ describe('sign-in experience routes with dev features disabled', () => {
     };
 
     const response = await requester.patch('/sign-in-exp').send({ adaptiveMfa, mfa });
-
     expect(updateDefaultSignInExperience).toHaveBeenCalledWith({ adaptiveMfa, mfa });
     expect(response.status).toEqual(200);
-    expect(response.body).toEqual({
+    expect(response.body).toEqual(expect.objectContaining({ adaptiveMfa, mfa }));
+  });
+
+  it('should include custom allowlist in GET response', async () => {
+    const emailBlocklistPolicy = {
+      customAllowlist: ['@allowed.com'],
+      customBlocklist: ['@blocked.com'],
+    };
+    const { requester } = createDevFeaturesDisabledRequester({
       ...mockSignInExperience,
-      adaptiveMfa,
-      mfa,
+      emailBlocklistPolicy,
     });
+
+    const response = await requester.get('/sign-in-exp');
+
+    expect(response.status).toEqual(200);
+    expect(response.body.emailBlocklistPolicy).toEqual(emailBlocklistPolicy);
+  });
+
+  it('should accept custom allowlist updates', async () => {
+    const { requester, updateDefaultSignInExperience } = createDevFeaturesDisabledRequester();
+    const emailBlocklistPolicy = {
+      customAllowlist: ['@allowed.com'],
+    };
+
+    const response = await requester.patch('/sign-in-exp').send({
+      emailBlocklistPolicy,
+    });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalledWith({ emailBlocklistPolicy });
   });
 });
 
 describe('PATCH /sign-in-exp signUpProfileFields', () => {
   it('should omit signUpProfileFields when the normalized value is absent', async () => {
-    const { requester, updateDefaultSignInExperience, normalizeSignUpProfileFields } =
+    const { requester, updateDefaultSignInExperience, normalizeProfileFields } =
       createSignUpProfileFieldsRequester();
 
     const response = await requester.patch('/sign-in-exp').send({});
 
-    expect(normalizeSignUpProfileFields).toHaveBeenCalledTimes(1);
+    expect(normalizeProfileFields).toHaveBeenCalledTimes(1);
     expect(response.status).toEqual(200);
     expect(updateDefaultSignInExperience).toHaveBeenCalledWith({});
     expect(updateDefaultSignInExperience.mock.calls[0]?.[0]).not.toHaveProperty(
@@ -532,17 +935,16 @@ describe('PATCH /sign-in-exp signUpProfileFields', () => {
   it('should persist normalized signUpProfileFields', async () => {
     const signUpProfileFields = [{ name: 'company' }];
     const normalizedSignUpProfileFields = [{ name: 'inviteCode' }];
-    const normalizeSignUpProfileFields = jest.fn(
-      async (_signUpProfileFields: SignInExperience['signUpProfileFields'] | undefined) =>
-        normalizedSignUpProfileFields
-    );
-    const { requester, updateDefaultSignInExperience } = createSignUpProfileFieldsRequester(
-      normalizeSignUpProfileFields
-    );
+    const normalizeProfileFields = jest.fn(
+      async <ProfileFields extends NormalizableProfileFields>(_profileFields: ProfileFields) =>
+        normalizedSignUpProfileFields as ProfileFields
+    ) as NormalizeProfileFieldsMock;
+    const { requester, updateDefaultSignInExperience } =
+      createSignUpProfileFieldsRequester(normalizeProfileFields);
 
     const response = await requester.patch('/sign-in-exp').send({ signUpProfileFields });
 
-    expect(normalizeSignUpProfileFields).toHaveBeenCalledWith(signUpProfileFields);
+    expect(normalizeProfileFields).toHaveBeenCalledWith(signUpProfileFields);
     expect(response.status).toEqual(200);
     expect(updateDefaultSignInExperience).toHaveBeenCalledWith({
       signUpProfileFields: normalizedSignUpProfileFields,
@@ -568,6 +970,320 @@ describe('PATCH /sign-in-exp signUpProfileFields', () => {
 
     expect(response.status).toEqual(200);
     expect(updateDefaultSignInExperience).toHaveBeenCalledWith({ signUpProfileFields: null });
+  });
+});
+
+describe('PATCH /sign-in-exp customUiCsp', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+    // eslint-disable-next-line @silverhand/fp/no-mutation -- Restore EnvSet after each feature-gate test.
+    (EnvSet.values as { isDevFeaturesEnabled: boolean }).isDevFeaturesEnabled =
+      originalIsDevFeaturesEnabled;
+    // eslint-disable-next-line @silverhand/fp/no-mutation -- Restore EnvSet after each feature-gate test.
+    (EnvSet.values as { isCloud: boolean }).isCloud = originalIsCloud;
+    // eslint-disable-next-line @silverhand/fp/no-mutation -- Restore EnvSet after each feature-gate test.
+    (EnvSet.values as { isProduction: boolean }).isProduction = originalIsProduction;
+  });
+
+  it('should normalize and persist valid Custom UI CSP config', async () => {
+    const { requester, updateDefaultSignInExperience, guardTenantUsageByKey } =
+      await createCustomUiCspRequester();
+
+    const response = await requester.patch('/sign-in-exp').send({
+      customUiCsp: {
+        scriptSrc: [' https://EXAMPLE.com ', 'https://example.com', 'https://*.example.com/path/'],
+        connectSrc: ['wss://api.example.com', 'https://api.example.com'],
+      },
+    });
+
+    const customUiCsp = {
+      scriptSrc: ['https://example.com', 'https://*.example.com/path/'],
+      connectSrc: ['wss://api.example.com', 'https://api.example.com'],
+    };
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalledWith({ customUiCsp });
+    expect(response.body).toMatchObject({ customUiCsp });
+    expect(guardTenantUsageByKey).toHaveBeenCalledWith('bringYourUiEnabled');
+  });
+
+  it('should guard Bring Your Own UI quota once when updating branding and Custom UI CSP', async () => {
+    const { requester, guardTenantUsageByKey } = await createCustomUiCspRequester();
+
+    const response = await requester.patch('/sign-in-exp').send({
+      hideLogtoBranding: true,
+      customUiCsp: {
+        scriptSrc: ['https://example.com'],
+      },
+    });
+
+    expect(response.status).toEqual(200);
+    expect(guardTenantUsageByKey).toHaveBeenCalledTimes(1);
+    expect(guardTenantUsageByKey).toHaveBeenCalledWith('bringYourUiEnabled');
+  });
+
+  it.each([
+    {
+      customUiCsp: { scriptSrc: ["'unsafe-inline'"] },
+      title: 'CSP keyword',
+    },
+    {
+      customUiCsp: { scriptSrc: ['https://example.com; report-uri https://evil.test'] },
+      title: 'semicolon',
+    },
+    {
+      customUiCsp: { scriptSrc: ['http://example.com'] },
+      title: 'unsupported scheme',
+    },
+    {
+      customUiCsp: { connectSrc: ['https://*.*.example.com'] },
+      title: 'malformed wildcard host',
+    },
+    {
+      customUiCsp: { imgSrc: ['https://example.com'] },
+      title: 'unsupported directive',
+    },
+  ])('should reject invalid Custom UI CSP config: $title', async ({ customUiCsp }) => {
+    const { requester, updateDefaultSignInExperience, guardTenantUsageByKey } =
+      await createCustomUiCspRequester();
+
+    const response = await requester.patch('/sign-in-exp').send({ customUiCsp });
+
+    expect(response.status).toEqual(400);
+    expect(updateDefaultSignInExperience).not.toHaveBeenCalled();
+    expect(guardTenantUsageByKey).not.toHaveBeenCalled();
+  });
+
+  it('should allow non-empty Custom UI CSP updates when dev features are disabled', async () => {
+    const { requester, updateDefaultSignInExperience, guardTenantUsageByKey } =
+      await createCustomUiCspRequester({ isDevFeaturesEnabled: false });
+
+    const response = await requester.patch('/sign-in-exp').send({
+      customUiCsp: {
+        scriptSrc: ['https://example.com'],
+      },
+    });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalledWith({
+      customUiCsp: {
+        scriptSrc: ['https://example.com'],
+      },
+    });
+    expect(guardTenantUsageByKey).toHaveBeenCalledWith('bringYourUiEnabled');
+  });
+
+  it('should allow non-empty Custom UI CSP updates outside Cloud', async () => {
+    const { requester, updateDefaultSignInExperience, guardTenantUsageByKey } =
+      await createCustomUiCspRequester({ isCloud: false });
+
+    const response = await requester.patch('/sign-in-exp').send({
+      customUiCsp: {
+        scriptSrc: ['https://example.com'],
+      },
+    });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalled();
+    expect(guardTenantUsageByKey).toHaveBeenCalledWith('bringYourUiEnabled');
+  });
+
+  it('should allow hiding the Logto branding outside Cloud without a license', async () => {
+    const { requester, updateDefaultSignInExperience } = await createCustomUiCspRequester({
+      isCloud: false,
+    });
+
+    const response = await requester.patch('/sign-in-exp').send({ hideLogtoBranding: true });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalled();
+  });
+
+  it('should allow hiding the Logto branding outside Cloud with a license that grants it', async () => {
+    installLicense({ hideLogtoBranding: true });
+    const { requester, updateDefaultSignInExperience } = await createCustomUiCspRequester({
+      isCloud: false,
+    });
+
+    const response = await requester.patch('/sign-in-exp').send({ hideLogtoBranding: true });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalledWith({ hideLogtoBranding: true });
+  });
+
+  it('should allow hiding the Logto branding outside Cloud with a license that only grants Bring your UI', async () => {
+    installLicense({ bringYourUi: true });
+    const { requester, updateDefaultSignInExperience } = await createCustomUiCspRequester({
+      isCloud: false,
+    });
+
+    const response = await requester.patch('/sign-in-exp').send({ hideLogtoBranding: true });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalled();
+  });
+
+  it('should allow non-empty Custom UI CSP updates outside Cloud with a license that grants Bring your UI', async () => {
+    installLicense({ bringYourUi: true });
+    const { requester, updateDefaultSignInExperience } = await createCustomUiCspRequester({
+      isCloud: false,
+    });
+    const customUiCsp = { scriptSrc: ['https://example.com'] };
+
+    const response = await requester.patch('/sign-in-exp').send({ customUiCsp });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalledWith({ customUiCsp });
+  });
+
+  it('should allow non-empty Custom UI CSP updates outside Cloud with a license that only grants hiding the branding', async () => {
+    installLicense({ hideLogtoBranding: true });
+    const { requester, updateDefaultSignInExperience } = await createCustomUiCspRequester({
+      isCloud: false,
+    });
+
+    const response = await requester.patch('/sign-in-exp').send({
+      customUiCsp: { scriptSrc: ['https://example.com'] },
+    });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalled();
+  });
+
+  it('should not read the license on Cloud', async () => {
+    const read = jest.spyOn(LicenseReader.shared, 'read');
+    const { requester, guardTenantUsageByKey } = await createCustomUiCspRequester();
+
+    const response = await requester.patch('/sign-in-exp').send({ hideLogtoBranding: true });
+
+    expect(response.status).toEqual(200);
+    expect(read).not.toHaveBeenCalled();
+    expect(guardTenantUsageByKey).toHaveBeenCalledWith('bringYourUiEnabled');
+  });
+
+  it('should allow clearing Custom UI CSP config without checking quota', async () => {
+    const { requester, updateDefaultSignInExperience, guardTenantUsageByKey } =
+      await createCustomUiCspRequester({ isDevFeaturesEnabled: false });
+
+    const response = await requester.patch('/sign-in-exp').send({
+      customUiCsp: {
+        scriptSrc: [],
+        connectSrc: [],
+      },
+    });
+
+    expect(response.status).toEqual(200);
+    expect(updateDefaultSignInExperience).toHaveBeenCalledWith({ customUiCsp: {} });
+    expect(guardTenantUsageByKey).not.toHaveBeenCalled();
+  });
+
+  it('should allow localhost HTTP source only outside production', async () => {
+    const { requester } = await createCustomUiCspRequester();
+
+    await expect(
+      requester.patch('/sign-in-exp').send({
+        customUiCsp: {
+          scriptSrc: ['http://localhost:3000'],
+        },
+      })
+    ).resolves.toMatchObject({ status: 200 });
+
+    const productionRequester = await createCustomUiCspRequester({ isProduction: true });
+
+    await expect(
+      productionRequester.requester.patch('/sign-in-exp').send({
+        customUiCsp: {
+          scriptSrc: ['http://localhost:3000'],
+        },
+      })
+    ).resolves.toMatchObject({ status: 400 });
+  });
+});
+
+describe('PATCH /sign-in-exp username policy', () => {
+  const findCaseConflicts = jest.fn();
+
+  const buildRequester = (currentCaseSensitive = true) =>
+    createRequester({
+      authedRoutes: signInExperiencesRoutes,
+      tenantContext: new MockTenant(
+        undefined,
+        {
+          signInExperiences: {
+            updateDefaultSignInExperience: async (
+              data: Partial<CreateSignInExperience>
+            ): Promise<SignInExperience> => ({ ...mockSignInExperience, ...data }),
+            findDefaultSignInExperience: jest.fn().mockResolvedValue({
+              ...mockSignInExperience,
+              usernamePolicy: { ...defaultUsernamePolicy, caseSensitive: currentCaseSensitive },
+            }),
+          },
+          customPhrases: { findAllCustomLanguageTags: async () => [] },
+        },
+        { getLogtoConnectors: jest.fn().mockResolvedValue([]) },
+        { signInExperiences: { validateLanguageInfo: jest.fn(), findCaseConflicts } }
+      ),
+    });
+
+  afterEach(() => {
+    findCaseConflicts.mockReset();
+  });
+
+  it('returns 409 when flipping to case-insensitive while conflicts exist', async () => {
+    findCaseConflicts.mockResolvedValueOnce({
+      totalConflicts: 1,
+      samples: [{ usernameLower: 'foo', userIds: ['u1', 'u2'] }],
+    });
+
+    const response = await buildRequester()
+      .patch('/sign-in-exp')
+      .send({ usernamePolicy: { ...defaultUsernamePolicy, caseSensitive: false } });
+
+    expect(response.status).toBe(409);
+    expect(findCaseConflicts).toHaveBeenCalled();
+  });
+
+  it('updates successfully when flipping to case-insensitive without conflicts', async () => {
+    findCaseConflicts.mockResolvedValueOnce({ totalConflicts: 0, samples: [] });
+
+    const response = await buildRequester()
+      .patch('/sign-in-exp')
+      .send({ usernamePolicy: { ...defaultUsernamePolicy, caseSensitive: false } });
+
+    expect(response.status).toBe(200);
+    expect(findCaseConflicts).toHaveBeenCalled();
+  });
+
+  it('skips the conflict check when the policy is already case-insensitive', async () => {
+    // The tenant is already case-insensitive (no case-sensitive -> case-insensitive transition), so
+    // the guard must not run the scan even though conflicts would be reported.
+    findCaseConflicts.mockResolvedValueOnce({
+      totalConflicts: 3,
+      samples: [{ usernameLower: 'foo', userIds: ['u1', 'u2'] }],
+    });
+
+    const response = await buildRequester(false)
+      .patch('/sign-in-exp')
+      .send({ usernamePolicy: { ...defaultUsernamePolicy, caseSensitive: false } });
+
+    expect(response.status).toBe(200);
+    expect(findCaseConflicts).not.toHaveBeenCalled();
+  });
+
+  it('rejects a username policy with no allowed characters', async () => {
+    const response = await buildRequester()
+      .patch('/sign-in-exp')
+      .send({
+        usernamePolicy: {
+          ...defaultUsernamePolicy,
+          allowedChars: { lowercase: false, uppercase: false, numbers: false, underscore: false },
+        },
+      });
+
+    // The `usernamePolicyGuard` refine rejects this at koaGuard (400). The exact human-readable
+    // message is asserted in core-kit's `username-policy.test.ts`; the test requester here does not
+    // mount the error handler that serializes the refine message into the response body.
+    expect(response.status).toBe(400);
   });
 });
 /* eslint-enable max-lines */

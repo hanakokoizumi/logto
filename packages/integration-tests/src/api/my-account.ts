@@ -1,6 +1,7 @@
 import type {
+  AccountTrustedDeviceResponse,
+  GetAccountUserSessionsResponse,
   GetUserApplicationGrantsResponse,
-  GetUserSessionsResponse,
   GetThirdPartyAccessTokenResponse,
   SessionGrantRevokeTarget,
   UserMfaVerificationResponse,
@@ -13,12 +14,14 @@ const verificationRecordIdHeader = 'logto-verification-id';
 
 export const updatePassword = async (
   api: KyInstance,
-  verificationRecordId: string,
+  verificationRecordId: string | undefined,
   password: string
 ) =>
   api.post('api/my-account/password', {
     json: { password },
-    headers: { [verificationRecordIdHeader]: verificationRecordId },
+    ...conditional(
+      verificationRecordId && { headers: { [verificationRecordIdHeader]: verificationRecordId } }
+    ),
   });
 
 export const updatePrimaryEmail = async (
@@ -55,21 +58,37 @@ export const deletePrimaryPhone = async (api: KyInstance, verificationRecordId: 
 
 export const updateIdentities = async (
   api: KyInstance,
-  verificationRecordId: string,
+  verificationRecordId: string | undefined,
   newIdentifierVerificationRecordId: string
 ) =>
   api.post('api/my-account/identities', {
     json: { newIdentifierVerificationRecordId },
-    headers: { [verificationRecordIdHeader]: verificationRecordId },
+    ...conditional(
+      verificationRecordId && { headers: { [verificationRecordIdHeader]: verificationRecordId } }
+    ),
+  });
+
+export const replaceIdentity = async (
+  api: KyInstance,
+  verificationRecordId: string | undefined,
+  newIdentifierVerificationRecordId: string
+) =>
+  api.put('api/my-account/identities', {
+    json: { newIdentifierVerificationRecordId },
+    ...conditional(
+      verificationRecordId && { headers: { [verificationRecordIdHeader]: verificationRecordId } }
+    ),
   });
 
 export const deleteIdentity = async (
   api: KyInstance,
   target: string,
-  verificationRecordId: string
+  verificationRecordId?: string
 ) =>
   api.delete(`api/my-account/identities/${target}`, {
-    headers: { [verificationRecordIdHeader]: verificationRecordId },
+    ...conditional(
+      verificationRecordId && { headers: { [verificationRecordIdHeader]: verificationRecordId } }
+    ),
   });
 
 export const updateUser = async (
@@ -155,17 +174,27 @@ export const updateMfaSettings = async (
     .json<{ skipMfaOnSignIn: boolean }>();
 
 export const getMyLogtoConfig = async (api: KyInstance) =>
-  api.get('api/my-account/logto-configs').json<{ mfa: { skipped: boolean } }>();
+  api.get('api/my-account/logto-configs').json<{
+    mfa: { enabled?: boolean; skipped: boolean; skipMfaOnSignIn: boolean };
+    passkeySignIn: { skipped: boolean };
+  }>();
 
 export const updateMyLogtoConfig = async (
   api: KyInstance,
-  logtoConfig: { mfa: { skipped: boolean } }
+  logtoConfig: { mfa?: { skipped: boolean }; passkeySignIn?: { skipped: boolean } },
+  verificationRecordId?: string
 ) =>
   api
     .patch('api/my-account/logto-configs', {
       json: logtoConfig,
+      ...(verificationRecordId && {
+        headers: { [verificationRecordIdHeader]: verificationRecordId },
+      }),
     })
-    .json<{ mfa: { skipped: boolean } }>();
+    .json<{
+      mfa: { enabled?: boolean; skipped: boolean; skipMfaOnSignIn: boolean };
+      passkeySignIn: { skipped: boolean };
+    }>();
 
 export const getSocialAccessToken = async (api: KyInstance, target: string) => {
   return api
@@ -189,7 +218,7 @@ export const getSessions = async (api: KyInstance, verificationRecordId: string)
     .get('api/my-account/sessions', {
       headers: { [verificationRecordIdHeader]: verificationRecordId },
     })
-    .json<GetUserSessionsResponse>();
+    .json<GetAccountUserSessionsResponse>();
 
 export const getMyAccountGrants = async (
   api: KyInstance,
@@ -228,5 +257,25 @@ export const deleteSession = async (
         options?.revokeGrantsTarget && { revokeGrantsTarget: options.revokeGrantsTarget }
       ),
     }),
+    headers: { [verificationRecordIdHeader]: verificationRecordId },
+  });
+
+export const getTrustedDevicesResponse = async (api: KyInstance, verificationRecordId: string) =>
+  api.get('api/my-account/trusted-devices', {
+    headers: { [verificationRecordIdHeader]: verificationRecordId },
+  });
+
+export const getTrustedDevices = async (api: KyInstance, verificationRecordId: string) => {
+  const response = await getTrustedDevicesResponse(api, verificationRecordId);
+
+  return response.json<AccountTrustedDeviceResponse[]>();
+};
+
+export const deleteTrustedDevice = async (
+  api: KyInstance,
+  trustedDeviceId: string,
+  verificationRecordId: string
+) =>
+  api.delete(`api/my-account/trusted-devices/${trustedDeviceId}`, {
     headers: { [verificationRecordIdHeader]: verificationRecordId },
   });

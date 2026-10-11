@@ -48,7 +48,36 @@ describe('consoleOperatorsRoutes', () => {
     expect(response.status).toEqual(400);
   });
 
+  it('uses the admin tenant username policy when checking a duplicate operator', async () => {
+    const requestEnd = jest.fn();
+    const hasUser = jest.fn(async () => true);
+    const getUsernameCaseSensitive = jest.fn(async () => false);
+
+    tenantPoolGetSpy.mockResolvedValue({
+      requestEnd,
+      queries: {
+        users: {
+          hasUser,
+          hasUserWithEmail: jest.fn(async () => false),
+        },
+        signInExperiences: { getUsernameCaseSensitive },
+      },
+      libraries: { users: {} },
+    } as unknown as Tenant);
+
+    const response = await request.post('/console-operators').send({
+      username: '123operator',
+      primaryEmail: 'operator@example.com',
+      password: 'OperatorPassword1!',
+    });
+
+    expect(response.status).toEqual(422);
+    expect(hasUser).toHaveBeenCalledWith('123operator', false);
+    expect(requestEnd).toHaveBeenCalledTimes(1);
+  });
+
   it('GET /console-operators returns operators from admin tenant organization', async () => {
+    const requestEnd = jest.fn();
     const listRow: UserWithOrganizationRoles = {
       id: 'op1',
       username: 'opuser',
@@ -63,11 +92,13 @@ describe('consoleOperatorsRoutes', () => {
       updatedAt: 1,
       profile: {},
       applicationId: null,
+      cimdClientId: null,
       isSuspended: false,
       organizationRoles: [{ id: 'role1', name: 'Admin' }],
     };
 
     tenantPoolGetSpy.mockResolvedValue({
+      requestEnd,
       queries: {
         organizations: {
           relations: {
@@ -85,5 +116,29 @@ describe('consoleOperatorsRoutes', () => {
     expect(response.status).toEqual(200);
     expect(response.body).toEqual([listRow]);
     expect(response.headers['total-number']).toEqual('1');
+    expect(requestEnd).toHaveBeenCalledTimes(1);
+  });
+
+  it('releases the admin tenant when listing operators fails', async () => {
+    const requestEnd = jest.fn();
+    tenantPoolGetSpy.mockResolvedValue({
+      requestEnd,
+      queries: {
+        organizations: {
+          relations: {
+            users: {
+              getUsersByOrganizationId: jest.fn(async () => {
+                throw new Error('Database unavailable');
+              }),
+            },
+          },
+        },
+      },
+    } as unknown as Tenant);
+
+    const response = await request.get('/console-operators');
+
+    expect(response.status).toEqual(500);
+    expect(requestEnd).toHaveBeenCalledTimes(1);
   });
 });

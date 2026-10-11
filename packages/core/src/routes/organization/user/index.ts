@@ -7,7 +7,7 @@ import {
 } from '@logto/schemas';
 import { z } from 'zod';
 
-import { buildManagementApiContext } from '#src/libraries/hook/utils.js';
+import { buildManagementApiContext, truncateMembershipDelta } from '#src/libraries/hook/utils.js';
 import { type QuotaLibrary } from '#src/libraries/quota.js';
 import koaGuard from '#src/middleware/koa-guard.js';
 import koaPagination from '#src/middleware/koa-pagination.js';
@@ -28,18 +28,24 @@ export default function userRoutes(
     '/:id/users',
     koaPagination(),
     koaGuard({
-      query: z.object({ q: z.string().optional() }),
+      query: z.object({
+        q: z.string().optional(),
+        organizationRoleId: z.string().min(1).optional(),
+      }),
       params: z.object({ id: z.string().min(1) }),
       response: userWithOrganizationRolesGuard.array(),
       status: [200, 404],
     }),
     async (ctx, next) => {
       const search = parseSearchOptions(userSearchKeys, ctx.guard.query);
+      const { organizationRoleId } = ctx.guard.query;
+      const organizationRoleFilter = organizationRoleId ? { organizationRoleId } : {};
 
       const [totalCount, entities] = await organizations.relations.users.getUsersByOrganizationId(
         ctx.guard.params.id,
         ctx.pagination,
-        search
+        search,
+        organizationRoleFilter
       );
 
       ctx.pagination.totalCount = totalCount;
@@ -60,26 +66,39 @@ export default function userRoutes(
     async (ctx, next) => {
       const {
         params: { id },
-        body: { userIds },
+        body: { userIds: rawUserIds },
       } = ctx.guard;
 
-      // Check quota limit before adding users
-      await quota.guardTenantUsageByKey('usersPerOrganizationLimit', {
-        entityId: id,
-        consumeUsageCount: userIds.length,
-      });
+      // Dedup the request body and filter against current members so the quota check
+      // consumes against the truly-new additions. Without this, duplicates in the body
+      // or re-adds of existing members would over-count (`insert` uses ON CONFLICT
+      // DO NOTHING, so they do not produce extra rows).
+      const userIds = [...new Set(rawUserIds)];
+      const existingUserIds = new Set(
+        await organizations.relations.users.getExistingUserIds(id, userIds)
+      );
+      const newUserIds = userIds.filter((userId) => !existingUserIds.has(userId));
+
+      if (newUserIds.length > 0) {
+        await quota.guardTenantUsageByKey('usersPerOrganizationLimit', {
+          entityId: id,
+          consumeUsageCount: newUserIds.length,
+        });
+      }
 
       await organizations.relations.users.insert(
         ...userIds.map((userId) => ({ organizationId: id, userId }))
       );
 
-      ctx.body = { userIds };
+      // Echo the raw request body in the response to preserve master's response shape.
+      // The dedup/filter above is purely an internal correctness fix for the quota math.
+      ctx.body = { userIds: rawUserIds };
       ctx.status = 201;
 
-      // Trigger hook event
       ctx.appendDataHookContext('Organization.Membership.Updated', {
         ...buildManagementApiContext(ctx),
         organizationId: id,
+        ...truncateMembershipDelta({ addedUserIds: newUserIds }),
       });
 
       return next();
@@ -96,11 +115,16 @@ export default function userRoutes(
     async (ctx, next) => {
       const {
         params: { id },
-        body: { userIds },
+        body: { userIds: rawUserIds },
       } = ctx.guard;
 
-      // For replace operation, calculate the delta (new count - current count)
-      // Only check quota if we're adding more users than currently exist
+      // Dedup the request body before computing the quota delta and before passing to
+      // `replace()`. Duplicates would otherwise inflate the delta and cause
+      // `replace()` to attempt a primary-key collision on the same (org, user) pair.
+      const userIds = [...new Set(rawUserIds)];
+
+      // For replace operation, calculate the delta (new count - current count).
+      // Only check quota if we're adding more users than currently exist.
       const [currentCount] = await organizations.relations.users.getEntities(Users, {
         organizationId: id,
       });
@@ -113,14 +137,19 @@ export default function userRoutes(
         });
       }
 
-      await organizations.relations.users.replace(id, userIds);
+      // Delta is used only for the webhook payload; the pre-write quota guard
+      // above (computed from the requested set size) remains authoritative.
+      const { added, removed } = await organizations.relations.users.replaceWithDelta(id, userIds);
 
       ctx.status = 204;
 
-      // Trigger hook event
       ctx.appendDataHookContext('Organization.Membership.Updated', {
         ...buildManagementApiContext(ctx),
         organizationId: id,
+        ...truncateMembershipDelta({
+          addedUserIds: added,
+          removedUserIds: removed,
+        }),
       });
 
       return next();
@@ -142,10 +171,10 @@ export default function userRoutes(
 
       ctx.status = 204;
 
-      // Trigger hook event
       ctx.appendDataHookContext('Organization.Membership.Updated', {
         ...buildManagementApiContext(ctx),
         organizationId: id,
+        ...truncateMembershipDelta({ removedUserIds: [userId] }),
       });
 
       return next();

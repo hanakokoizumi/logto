@@ -37,10 +37,22 @@ const session = {
     mfa_factor_not_enabled: 'MFA 因素未启用。',
     suggest_additional_mfa: '为更强的安全性，建议添加另一种多因素认证方式。你可以跳过此步骤继续。',
   },
+  trusted_device_suggest_opt_in: '请选择是否信任此设备。',
+  step_up: {
+    invalid_interaction_event: '升级认证仅适用于登录交互。',
+    subject_not_found: '未找到用于升级认证的已认证会话。请重新登录。',
+    forbidden_route: '升级认证期间不允许访问此路由。',
+    forbidden_identifier: '升级认证期间不允许提供标识符。请移除 identifier 字段后重试。',
+    acr_not_satisfied: '已完成的验证不满足请求的认证上下文，请验证其他方式。',
+    require_verification: '需要使用你现有的任一验证方式完成验证，才能达到请求的认证上下文。',
+  },
   passkey_sign_in: {
     pending_info_not_found: '未找到待处理的 Passkey 登录信息。请重新发起登录流程。',
     conflict_rp_id: 'Relying Party ID 不匹配。请使用正确的客户端登录。',
     sso_users_not_allowed: 'SSO 用户无法使用 Passkey 登录选项。',
+  },
+  password_expiration: {
+    reset_not_allowed: '只有在当前登录会话中的密码过期后，才允许重置密码。',
   },
   sso_enabled: '该邮箱已开启单点登录，请使用 SSO 登录。',
   captcha_required: '需要验证码。',

@@ -1,3 +1,6 @@
+import type { JsonObject, UserProfile } from '@logto/schemas';
+import { conditional, type Nullable } from '@silverhand/essentials';
+
 import { createAuthenticatedKy } from './base-ky';
 
 export const verificationRecordIdHeader = 'logto-verification-id';
@@ -42,6 +45,30 @@ export const deleteUsername = async (accessToken: string, verificationRecordId: 
   });
 };
 
+export const updateName = async (accessToken: string, payload: { name: Nullable<string> }) => {
+  await createAuthenticatedKy(accessToken).patch('/api/my-account', {
+    json: payload,
+  });
+};
+
+export const updateAvatar = async (accessToken: string, payload: { avatar: Nullable<string> }) => {
+  await createAuthenticatedKy(accessToken).patch('/api/my-account', {
+    json: payload,
+  });
+};
+
+export const updateProfile = async (accessToken: string, payload: UserProfile) => {
+  await createAuthenticatedKy(accessToken).patch('/api/my-account/profile', {
+    json: payload,
+  });
+};
+
+export const updateCustomData = async (accessToken: string, payload: JsonObject) => {
+  await createAuthenticatedKy(accessToken).patch('/api/my-account', {
+    json: { customData: payload },
+  });
+};
+
 export const deletePrimaryEmail = async (accessToken: string, verificationRecordId: string) => {
   await createAuthenticatedKy(accessToken).delete('/api/my-account/primary-email', {
     headers: { [verificationRecordIdHeader]: verificationRecordId },
@@ -56,11 +83,13 @@ export const deletePrimaryPhone = async (accessToken: string, verificationRecord
 
 export const updatePassword = async (
   accessToken: string,
-  verificationRecordId: string,
+  verificationRecordId: string | undefined,
   payload: { password: string }
 ) => {
   await createAuthenticatedKy(accessToken).post('/api/my-account/password', {
     json: payload,
-    headers: { [verificationRecordIdHeader]: verificationRecordId },
+    ...conditional(
+      verificationRecordId && { headers: { [verificationRecordIdHeader]: verificationRecordId } }
+    ),
   });
 };

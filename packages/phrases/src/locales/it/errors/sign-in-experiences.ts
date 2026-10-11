@@ -39,6 +39,14 @@ const sign_in_experiences = {
     'Formato non valido per gli elementi della lista bloccata delle email personalizzate: {{items, list(type:conjunction)}}. Ogni elemento deve essere un indirizzo email o un dominio email valido, ad es., foo@example.com o @example.com.',
   forgot_password_method_requires_connector:
     'Il metodo di recupero della password richiede che sia configurato un connettore {{method}} corrispondente.',
+  password_expiration_requires_forgot_password:
+    'La scadenza della password richiede almeno un metodo di recupero password con un connettore valido.',
+  password_expiration_not_enabled:
+    "La politica di scadenza della password non è abilitata. Abilitala nelle impostazioni dell'esperienza di accesso prima di far scadere le password.",
+  password_expiration_invalid_period_days:
+    'I giorni del periodo di validità devono essere un numero intero positivo quando la scadenza della password è abilitata.',
+  username_policy_case_conflicts_exist:
+    'Non è possibile passare a nomi utente senza distinzione tra maiuscole e minuscole mentre esistono nomi utente che differiscono solo per maiuscole e minuscole. Risolvi i conflitti e riprova.',
 };
 
 export default Object.freeze(sign_in_experiences);

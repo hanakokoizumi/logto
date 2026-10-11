@@ -1,5 +1,27 @@
 # @logto/connector-logto-email
 
+## 1.3.7
+
+### Patch Changes
+
+- @logto/connector-kit@5.1.1
+
+## 1.3.6
+
+### Patch Changes
+
+- Updated dependencies [e7b6e9de1]
+- Updated dependencies [b7386a5113]
+  - @logto/connector-kit@5.1.0
+
+## 1.3.5
+
+### Patch Changes
+
+- 7b6ee51e8c: update fromName to new logto email service domain
+- Updated dependencies [41a56f79e3]
+  - @logto/connector-kit@5.0.1
+
 ## 1.3.4
 
 ### Patch Changes

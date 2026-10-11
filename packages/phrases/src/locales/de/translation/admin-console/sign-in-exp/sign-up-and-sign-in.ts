@@ -19,6 +19,13 @@ const sign_up_and_sign_in = {
     set_a_password_option: 'Erstellen Sie Ihr Passwort',
     verify_at_sign_up_option: 'Bei Anmeldung überprüfen',
     social_only_creation_description: '(Dies gilt nur für die Erstellung von Social-Accounts)',
+    collect_user_profile: 'Benutzerprofil sammeln',
+    add_profile_fields: 'Profilfelder hinzufügen',
+    profile_fields_hint: {
+      not_in_list: 'Nicht in der Liste?',
+      set_up: 'Einrichten',
+      go_to: 'weitere Profilfelder jetzt.',
+    },
   },
   sign_in: {
     title: 'ANMELDEN',
@@ -102,6 +109,41 @@ const sign_up_and_sign_in = {
     unknown_session_redirect_url: 'Unbekannte Sitzungsumleitungs-URL',
     unknown_session_redirect_url_tip:
       'Manchmal kann Logto eine Benutzersitzung auf der Anmeldeseite nicht erkennen, z. B. wenn eine Sitzung abläuft oder der Benutzer den Anmeldelink zu den Lesezeichen hinzufügt oder teilt. Standardmäßig erscheint ein 404-Fehler "Unbekannte Sitzung". Um die Benutzererfahrung zu verbessern, legen Sie eine Fallback-URL fest, um Benutzer zurück zu Ihrer App zu leiten und die Authentifizierung neu zu starten.',
+  },
+  username_policy: {
+    title: 'Benutzernamenrichtlinie',
+    description:
+      'Passen Sie die Anforderungen an Benutzernamen an, einschließlich Länge, erlaubter Zeichen und Groß-/Kleinschreibung.',
+    manage_button: 'Verwalten',
+    modal_title: 'Benutzernamenrichtlinie',
+    modal_description: 'Passen Sie die Anforderungen an Benutzernamen für Ihre Endbenutzer an.',
+    length: {
+      title: 'Länge des Benutzernamens',
+      minimum: 'Minimum',
+      maximum: 'Maximum',
+      min_greater_than_max: 'Die Mindestlänge darf die maximale Länge nicht überschreiten.',
+    },
+    allowed_chars: {
+      title: 'Erlaubte Zeichentypen',
+      uppercase: 'Großbuchstaben (A-Z)',
+      lowercase: 'Kleinbuchstaben (a-z)',
+      numbers: 'Zahlen (0-9)',
+      underscore: 'Unterstriche (_)',
+      no_valid_leading_char:
+        'Zahlen allein sind nicht erlaubt. Aktivieren Sie mindestens eine der Optionen: Großbuchstaben, Kleinbuchstaben oder Unterstriche.',
+      no_char_selected: 'Wählen Sie mindestens einen Zeichentyp aus.',
+    },
+    case_sensitive: {
+      title: 'Groß-/Kleinschreibung bei Benutzernamen beachten',
+      description:
+        'Groß- und Kleinbuchstaben als unterschiedlich behandeln. „user123“ und „User123“ werden als verschiedene Benutzernamen behandelt.',
+    },
+    case_conflicts: {
+      title: 'Vorhandene Benutzernamenkonflikte erkannt',
+      description:
+        'Einige Benutzernamen würden kollidieren, wenn die Groß-/Kleinschreibung deaktiviert wird. Lösen Sie die {{count}} unten aufgeführten Konfliktgruppen, bevor Sie speichern.',
+      sample_title: 'Konfliktbehaftete Benutzernamen',
+    },
   },
 };
 

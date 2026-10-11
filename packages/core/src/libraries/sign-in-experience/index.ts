@@ -1,7 +1,9 @@
 import { GoogleConnector } from '@logto/connector-kit';
 import { builtInLanguages } from '@logto/phrases-experience';
 import type {
+  AccountCenterSsrSignInExperience,
   ConnectorMetadata,
+  ForgotPasswordMethods,
   FullSignInExperience,
   LanguageInfo,
   PartialColor,
@@ -9,7 +11,7 @@ import type {
   SsoConnectorMetadata,
 } from '@logto/schemas';
 import { adminTenantId, ConnectorType, ForgotPasswordMethod, TenantTag } from '@logto/schemas';
-import { deduplicate, trySafe } from '@silverhand/essentials';
+import { deduplicate, trySafe, type Nullable } from '@silverhand/essentials';
 import deepmerge from 'deepmerge';
 
 import { type WellKnownCache } from '#src/caches/well-known.js';
@@ -18,14 +20,37 @@ import RequestError from '#src/errors/RequestError/index.js';
 import type { ConnectorLibrary } from '#src/libraries/connector.js';
 import { resolveSignUpCustomProfileFields } from '#src/libraries/custom-profile-fields/utils.js';
 import type { SsoConnectorLibrary } from '#src/libraries/sso-connector.js';
+import type { SubscriptionLibrary } from '#src/libraries/subscription.js';
 import { ssoConnectorFactories } from '#src/sso/index.js';
 import type Queries from '#src/tenants/Queries.js';
 import assertThat from '#src/utils/assert-that.js';
 import { isKeyOfI18nPhrases } from '#src/utils/translation.js';
 
+import type { LogtoConnector } from '../../utils/connectors/types.js';
+
 export * from './sign-up.js';
 export * from './sign-in.js';
 export * from './email-blocklist-policy.js';
+
+export const getForgotPasswordAvailability = (
+  connectors: LogtoConnector[],
+  methods: Nullable<ForgotPasswordMethods>
+): FullSignInExperience['forgotPassword'] => {
+  const hasEmailConnector = connectors.some(({ type }) => type === ConnectorType.Email);
+  const hasSmsConnector = connectors.some(({ type }) => type === ConnectorType.Sms);
+
+  if (!methods) {
+    return {
+      email: hasEmailConnector,
+      phone: hasSmsConnector,
+    };
+  }
+
+  return {
+    email: methods.includes(ForgotPasswordMethod.EmailVerificationCode) && hasEmailConnector,
+    phone: methods.includes(ForgotPasswordMethod.PhoneVerificationCode) && hasSmsConnector,
+  };
+};
 
 type SignInExperienceOverride = Partial<Omit<SignInExperience, 'color'> & { color: PartialColor }>;
 
@@ -34,7 +59,8 @@ export const createSignInExperienceLibrary = (
   queries: Queries,
   { getLogtoConnectors }: ConnectorLibrary,
   { getAvailableSsoConnectors }: SsoConnectorLibrary,
-  wellKnownCache: WellKnownCache
+  wellKnownCache: WellKnownCache,
+  _subscription: SubscriptionLibrary
 ) => {
   const {
     tenants: { findTenantMetadataById },
@@ -43,6 +69,7 @@ export const createSignInExperienceLibrary = (
     applicationSignInExperiences: { safeFindSignInExperienceByApplicationId },
     captchaProviders: { findCaptchaProvider },
     customProfileFields: { findAllCustomProfileFields },
+    users: { findUsernameCaseConflicts, countUsernameCaseConflicts },
     organizations,
   } = queries;
 
@@ -192,6 +219,7 @@ export const createSignInExperienceLibrary = (
       ...(type === 'RecaptchaEnterprise' &&
         'mode' in provider.config &&
         provider.config.mode && { mode: provider.config.mode }),
+      ...(type === 'Cap' && { endpoint: provider.config.endpoint }),
     };
   };
 
@@ -287,30 +315,7 @@ export const createSignInExperienceLibrary = (
      *   both method inclusion and connector availability must be satisfied
      */
     const getForgotPassword = () => {
-      // Check availability of required connectors
-      const hasEmailConnector = logtoConnectors.some(({ type }) => type === ConnectorType.Email);
-      const hasSmsConnector = logtoConnectors.some(({ type }) => type === ConnectorType.Sms);
-
-      // If forgotPasswordMethods is null (production compatibility),
-      // fall back to connector-based availability only
-      if (!signInExperience.forgotPasswordMethods) {
-        return {
-          email: hasEmailConnector,
-          phone: hasSmsConnector,
-        };
-      }
-
-      // When methods are explicitly configured, require both method inclusion and connector availability
-      return {
-        email:
-          signInExperience.forgotPasswordMethods.includes(
-            ForgotPasswordMethod.EmailVerificationCode
-          ) && hasEmailConnector,
-        phone:
-          signInExperience.forgotPasswordMethods.includes(
-            ForgotPasswordMethod.PhoneVerificationCode
-          ) && hasSmsConnector,
-      };
+      return getForgotPasswordAvailability(logtoConnectors, signInExperience.forgotPasswordMethods);
     };
 
     // Resolve helper owns the dev-feature and null/undefined fallback logic. Explicit arrays
@@ -321,14 +326,17 @@ export const createSignInExperienceLibrary = (
       signInExperience.signUpProfileFields
     );
 
+    const {
+      emailBlocklistPolicy: _emailBlocklistPolicy,
+      forgotPasswordMethods: _forgotPasswordMethods,
+      ...publicSignInExperience
+    } = deepmerge<SignInExperience, SignInExperienceOverride>(
+      deepmerge<SignInExperience, SignInExperienceOverride>(signInExperience, appSignInExperience),
+      organizationOverride
+    );
+
     return {
-      ...deepmerge<SignInExperience, SignInExperienceOverride>(
-        deepmerge<SignInExperience, SignInExperienceOverride>(
-          signInExperience,
-          appSignInExperience
-        ),
-        organizationOverride
-      ),
+      ...publicSignInExperience,
       socialConnectors,
       ssoConnectors,
       forgotPassword: getForgotPassword(),
@@ -336,13 +344,36 @@ export const createSignInExperienceLibrary = (
       googleOneTap: getGoogleOneTap(),
       captchaConfig: await getCaptchaConfig(),
       customProfileFields: signUpCustomProfileFields,
+      customProfileFieldCatalog: customProfileFields,
     };
+  };
+
+  const getAccountCenterSsrSignInExperience =
+    async (): Promise<AccountCenterSsrSignInExperience> => {
+      const { color } = await findDefaultSignInExperience();
+
+      return { color };
+    };
+
+  /**
+   * Username case-sensitivity conflicts: groups of usernames that would clash if the tenant
+   * switched to a case-insensitive policy. Returns the total group count plus a capped sample,
+   * powering the diagnostic GET endpoint and the PATCH `/sign-in-exp` 409 guard.
+   */
+  const findCaseConflicts = async (limit: number) => {
+    const [totalConflicts, samples] = await Promise.all([
+      countUsernameCaseConflicts(),
+      findUsernameCaseConflicts(limit),
+    ]);
+    return { totalConflicts, samples };
   };
 
   return {
     validateLanguageInfo,
     removeUnavailableSocialConnectorTargets,
     getFullSignInExperience,
+    getAccountCenterSsrSignInExperience,
     findCaptchaPublicConfig,
+    findCaseConflicts,
   };
 };

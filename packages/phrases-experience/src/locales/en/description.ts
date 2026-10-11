@@ -37,6 +37,8 @@ const description = {
   reset_password: 'Reset password',
   reset_password_description:
     'Enter the {{types, list(type: disjunction;)}} associated with your account, and we’ll send you the verification code to reset your password.',
+  reset_password_magic_link_description:
+    'Enter the email address associated with your account to continue resetting your password.',
   new_password: 'New password',
   set_password: 'Set password',
   password_changed: 'Password changed',
@@ -47,6 +49,7 @@ const description = {
   enter_username: 'Set username',
   enter_username_description:
     'Username is an alternative for sign-in. Username should contain only letters, numbers, and underscores.',
+  enter_username_policy_description: 'Username is an alternative for sign-in. {{requirements}}',
   link_email: 'Link email',
   link_phone: 'Link phone',
   link_email_or_phone: 'Link email or phone',
@@ -84,12 +87,25 @@ const description = {
     character_types_other:
       'should contain at least {{count}} types of uppercase letters, lowercase letters, digits, and symbols',
   },
+  username_requirements: 'Username {{items, list}}.',
+  username_requirement: {
+    length: 'must be {{min}} to {{max}} characters',
+    characters: 'can only contain {{characters, list}}',
+  },
+  username_character: {
+    uppercase: 'uppercase letters',
+    lowercase: 'lowercase letters',
+    number: 'numbers',
+    underscore: 'underscores',
+  },
   use: 'Use',
   single_sign_on_email_form: 'Enter your enterprise email address',
   single_sign_on_connectors_list:
     'Your enterprise has enabled Single Sign-On for the email account {{email}}. You can continue to sign in with the following SSO providers.',
   single_sign_on_enabled: 'Single Sign-On is enabled for this account',
   authorize_title: 'Authorize {{name}}',
+  unregistered_client_notice:
+    'This app is self-declared by <hostname>{{host}}</hostname>, including its name and logo. Please verify the hostname before you continue.',
   request_permission: '{{name}} is requesting access to:',
   grant_organization_access: 'Grant the organization access:',
   authorize_personal_data_usage: 'Authorize the use of your personal data:',
@@ -108,6 +124,8 @@ const description = {
     'Enter you {{types, list(type: disjunction;)}} to create a new account.',
   all_account_creation_options: 'All account creation options',
   back_to_sign_in: 'Back to sign in',
+  password_expired: 'Your password has expired and must be reset before you can sign in.',
+  password_expiration_reset: 'Reset password',
   support_email: 'Support email: <link></link>',
   support_website: 'Support website: <link></link>',
   switch_account_title: 'You are currently signed in as {{account}}',

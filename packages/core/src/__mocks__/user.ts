@@ -22,10 +22,13 @@ export const mockUser: User = {
   customData: {},
   profile: {},
   applicationId: 'bar',
+  cimdClientId: null,
+  passwordUpdatedAt: 1_650_969_000_000,
   lastSignInAt: 1_650_969_465_789,
   createdAt: 1_650_969_000_000,
   updatedAt: 1_650_969_000_000,
   isSuspended: false,
+  isPasswordExpired: false,
 };
 
 export const mockUserTotpMfaVerification = {
@@ -78,10 +81,13 @@ export const mockUserWithPassword: User = {
   mfaVerifications: [],
   profile: {},
   applicationId: 'bar',
+  cimdClientId: null,
+  passwordUpdatedAt: 1_650_969_000_000,
   lastSignInAt: 1_650_969_465_789,
   createdAt: 1_650_969_000_000,
   updatedAt: 1_650_969_000_000,
   isSuspended: false,
+  isPasswordExpired: false,
 };
 
 export const mockUserList: User[] = [
@@ -101,10 +107,13 @@ export const mockUserList: User[] = [
     mfaVerifications: [],
     profile: {},
     applicationId: 'bar',
+    cimdClientId: null,
+    passwordUpdatedAt: 1_650_969_000_000,
     lastSignInAt: 1_650_969_465_000,
     createdAt: 1_650_969_000_000,
     updatedAt: 1_650_969_000_000,
     isSuspended: false,
+    isPasswordExpired: false,
   },
   {
     tenantId: 'fake_tenant',
@@ -122,10 +131,13 @@ export const mockUserList: User[] = [
     mfaVerifications: [],
     profile: {},
     applicationId: 'bar',
+    cimdClientId: null,
+    passwordUpdatedAt: 1_650_969_000_000,
     lastSignInAt: 1_650_969_465_000,
     createdAt: 1_650_969_000_000,
     updatedAt: 1_650_969_000_000,
     isSuspended: false,
+    isPasswordExpired: false,
   },
   {
     tenantId: 'fake_tenant',
@@ -143,10 +155,13 @@ export const mockUserList: User[] = [
     mfaVerifications: [],
     profile: {},
     applicationId: 'bar',
+    cimdClientId: null,
+    passwordUpdatedAt: 1_650_969_000_000,
     lastSignInAt: 1_650_969_465_000,
     createdAt: 1_650_969_000_000,
     updatedAt: 1_650_969_000_000,
     isSuspended: false,
+    isPasswordExpired: false,
   },
   {
     tenantId: 'fake_tenant',
@@ -164,10 +179,13 @@ export const mockUserList: User[] = [
     mfaVerifications: [],
     profile: {},
     applicationId: 'bar',
+    cimdClientId: null,
+    passwordUpdatedAt: 1_650_969_000_000,
     lastSignInAt: 1_650_969_465_000,
     createdAt: 1_650_969_000_000,
     updatedAt: 1_650_969_000_000,
     isSuspended: false,
+    isPasswordExpired: false,
   },
   {
     tenantId: 'fake_tenant',
@@ -185,10 +203,13 @@ export const mockUserList: User[] = [
     mfaVerifications: [],
     profile: {},
     applicationId: 'bar',
+    cimdClientId: null,
+    passwordUpdatedAt: 1_650_969_000_000,
     lastSignInAt: 1_650_969_465_000,
     createdAt: 1_650_969_000_000,
     updatedAt: 1_650_969_000_000,
     isSuspended: false,
+    isPasswordExpired: false,
   },
 ];
 

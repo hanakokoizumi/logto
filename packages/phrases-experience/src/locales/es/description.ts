@@ -36,7 +36,9 @@ const description = {
   skip_social_linking: '¿Omitir vinculación a la cuenta existente?',
   reset_password: 'Restablecer contraseña',
   reset_password_description:
-    'Ingrese los {{types, lista(type: disyunción;)}} asociados a su cuenta, y le enviaremos el código de verificación para restablecer su contraseña.',
+    'Ingrese los {{types, list(type: disjunction;)}} asociados a su cuenta, y le enviaremos el código de verificación para restablecer su contraseña.',
+  reset_password_magic_link_description:
+    'Ingresa la dirección de correo electrónico asociada con tu cuenta para continuar restableciendo tu contraseña.',
   new_password: 'Nueva contraseña',
   set_password: 'Establecer contraseña',
   password_changed: 'Contraseña cambiada',
@@ -47,6 +49,8 @@ const description = {
   enter_username: 'Establecer nombre de usuario',
   enter_username_description:
     'El nombre de usuario es una alternativa para iniciar sesión. Debe contener solo letras, números y guiones bajos.',
+  enter_username_policy_description:
+    'El nombre de usuario es una alternativa para iniciar sesión. {{requirements}}',
   link_email: 'Vincular correo electrónico',
   link_phone: 'Vincular teléfono',
   link_email_or_phone: 'Vincular correo electrónico o teléfono',
@@ -68,7 +72,7 @@ const description = {
   no_region_code_found: 'No se encontró código de región',
   verify_email: 'Verificar su correo electrónico',
   verify_phone: 'Verificar su número de teléfono',
-  password_requirements: 'Contraseña {{items, lista}}.',
+  password_requirements: 'Contraseña {{items, list}}.',
   password_requirement: {
     length_one: 'requiere un mínimo de {{count}} carácter',
     length_two: 'requiere un mínimo de {{count}} caracteres',
@@ -86,6 +90,17 @@ const description = {
     character_types_other:
       'debe contener al menos {{count}} tipos de letras mayúsculas, letras minúsculas, dígitos y símbolos',
   },
+  username_requirements: 'Nombre de usuario {{items, list}}.',
+  username_requirement: {
+    length: 'debe tener entre {{min}} y {{max}} caracteres',
+    characters: 'solo puede contener {{characters, list}}',
+  },
+  username_character: {
+    uppercase: 'letras mayúsculas',
+    lowercase: 'letras minúsculas',
+    number: 'números',
+    underscore: 'guiones bajos',
+  },
   use: 'Usar',
   single_sign_on_email_form: 'Ingrese su dirección de correo electrónico corporativo',
   single_sign_on_connectors_list:
@@ -93,6 +108,8 @@ const description = {
   single_sign_on_enabled:
     'El inicio de sesión único (Single Sign-On) está habilitado para esta cuenta',
   authorize_title: 'Autorizar {{name}}',
+  unregistered_client_notice:
+    'Esta aplicación es autodeclarada por <hostname>{{host}}</hostname>, incluidos su nombre y logotipo. Verifica el nombre de host antes de continuar.',
   request_permission: '{{name}} solicita acceso a:',
   grant_organization_access: 'Otorgar acceso a la organización:',
   authorize_personal_data_usage: 'Autorizar el uso de tus datos personales:',
@@ -111,6 +128,9 @@ const description = {
   identifier_register_description:
     'Ingrese su {{types, list(type: disjunction;)}} para crear una nueva cuenta.',
   all_account_creation_options: 'Todas las opciones de creación de cuenta',
+  password_expired:
+    'Tu contraseña ha caducado y debe ser restablecida antes de que puedas iniciar sesión.',
+  password_expiration_reset: 'Restablecer contraseña',
   back_to_sign_in: 'Volver a iniciar sesión',
   support_email: 'Correo electrónico de soporte: <link></link>',
   support_website: 'Sitio web de soporte: <link></link>',

@@ -6,6 +6,7 @@ import {
   MfaPolicy,
   SignInIdentifier,
   SignInMode,
+  defaultUsernamePolicy,
 } from '@logto/schemas';
 
 import type { SignInExperienceResponse } from '@/types';
@@ -107,7 +108,11 @@ export const mockSignInExperience: SignInExperience = {
   customContent: {},
   agreeToTermsPolicy: AgreeToTermsPolicy.ManualRegistrationOnly,
   customUiAssets: null,
+  customUiCsp: {},
   passwordPolicy: {},
+  passwordExpiration: {
+    enabled: false,
+  },
   mfa: {
     policy: MfaPolicy.PromptAtSignInAndSignUp,
     factors: [],
@@ -119,12 +124,15 @@ export const mockSignInExperience: SignInExperience = {
   unknownSessionRedirectUrl: null,
   captchaPolicy: {},
   adaptiveMfa: {},
+  trustedDevice: {},
   sentinelPolicy: {},
+  verificationCodePolicy: {},
   emailBlocklistPolicy: {},
   forgotPasswordMethods: [],
   hideLogtoBranding: false,
   passkeySignIn: {},
   signUpProfileFields: null,
+  usernamePolicy: defaultUsernamePolicy,
 };
 
 export const mockSignInExperienceSettings: SignInExperienceResponse = {
@@ -153,7 +161,11 @@ export const mockSignInExperienceSettings: SignInExperienceResponse = {
   customContent: {},
   agreeToTermsPolicy: mockSignInExperience.agreeToTermsPolicy,
   customUiAssets: null,
+  customUiCsp: {},
   passwordPolicy: {},
+  passwordExpiration: {
+    enabled: false,
+  },
   mfa: {
     policy: MfaPolicy.PromptAtSignInAndSignUp,
     factors: [],
@@ -166,10 +178,12 @@ export const mockSignInExperienceSettings: SignInExperienceResponse = {
   unknownSessionRedirectUrl: null,
   captchaPolicy: {},
   adaptiveMfa: {},
+  trustedDevice: {},
   sentinelPolicy: {},
-  emailBlocklistPolicy: {},
+  verificationCodePolicy: {},
   passkeySignIn: {},
   signUpProfileFields: null,
+  usernamePolicy: defaultUsernamePolicy,
 };
 
 const usernameSettings = {

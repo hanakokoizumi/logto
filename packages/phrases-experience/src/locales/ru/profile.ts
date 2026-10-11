@@ -26,6 +26,24 @@ const profile = {
     male: 'Мужской',
     prefer_not_to_say: 'Предпочитаю не говорить',
   },
+  checkbox_value: {
+    checked: 'Да',
+    unchecked: 'Нет',
+  },
+  avatar_upload: {
+    upload: 'Загрузить',
+    remove: 'Удалить',
+    uploading: 'Загрузка...',
+    hint: 'Рекомендуемый размер 1:1, до {{limit}}.',
+    error_file_type: 'Тип файла должен быть {{extensions}}.',
+    error_file_size: 'Размер файла не должен превышать {{limit}}.',
+    error_storage_not_configured: 'Не удалось загрузить фото. Повторите попытку позже.',
+    error_upload: 'Не удалось загрузить фото. Попробуйте ещё раз.',
+    error_save: 'Не удалось сохранить фото. Повторите попытку.',
+    crop_title: 'Обрезать фото',
+    zoom: 'Масштаб',
+    error_crop: 'Не удалось обрезать изображение. Попробуйте ещё раз.',
+  },
 };
 
 export default Object.freeze(profile);

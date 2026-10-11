@@ -1,5 +1,10 @@
 import type router from '@logto/cloud/routes';
-import { type tenantAuthRouter } from '@logto/cloud/routes';
+import {
+  type consoleSsoRouter,
+  type emailLogsRouter,
+  type tenantAuthRouter,
+  type userStripeCustomersRouter,
+} from '@logto/cloud/routes';
 import { useLogto } from '@logto/react';
 import { getTenantOrganizationId } from '@logto/schemas';
 import { conditional, trySafe } from '@silverhand/essentials';
@@ -14,6 +19,7 @@ import { TenantsContext } from '@/contexts/TenantsProvider';
 
 const responseErrorBodyGuard = z.object({
   message: z.string(),
+  error: z.object({ code: z.string().optional() }).optional(),
 });
 
 export const tryReadResponseErrorBody = async (error: ResponseError) =>
@@ -39,14 +45,26 @@ type UseCloudApiProps = {
   hideErrorToast?: boolean;
 };
 
-export const useCloudApi = ({ hideErrorToast = false }: UseCloudApiProps = {}): Client<
-  typeof router
-> => {
+/**
+ * The routers the cloud API exposes to the console under the same access token. Routers outside
+ * the default one are standalone on the cloud side (split to stay under TypeScript's
+ * type-instantiation depth limit), so the client type is selected per call site instead of
+ * intersecting them.
+ */
+type ConsoleCloudRouter =
+  | typeof router
+  | typeof emailLogsRouter
+  | typeof userStripeCustomersRouter
+  | typeof consoleSsoRouter;
+
+export const useCloudApi = <R extends ConsoleCloudRouter = typeof router>({
+  hideErrorToast = false,
+}: UseCloudApiProps = {}): Client<R> => {
   const { i18n } = useTranslation();
   const { isAuthenticated, getAccessToken } = useLogto();
   const api = useMemo(
     () =>
-      new Client<typeof router>({
+      new Client<R>({
         baseUrl: window.location.origin,
         headers: async () => {
           if (isAuthenticated) {

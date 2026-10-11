@@ -29,6 +29,7 @@ const application = {
   should_delete_custom_domains_first: "Devrait d'abord supprimer les domaines personnalisés.",
   no_legacy_secret_found: "L'application n'a pas de secret hérité.",
   secret_name_exists: 'Le nom du secret existe déjà.',
+  sync_application_secret_failed: "Échec de la synchronisation du secret de l'application.",
   saml: {
     use_saml_app_api:
       "Utilisez l'API `[METHOD] /saml-applications(/.*)?` pour gérer l'application SAML.",
@@ -37,6 +38,8 @@ const application = {
       "Vous NE POUVEZ PAS créer plus d'applications SAML car la limite de {{limit}} est atteinte.",
     acs_url_binding_not_supported:
       'Seul le binding HTTP-POST est pris en charge pour recevoir des assertions SAML.',
+    acs_url_scheme_not_supported:
+      'Seuls les schémas HTTP et HTTPS sont pris en charge pour l’URL de l’Assertion Consumer Service.',
     can_not_delete_active_secret: 'Impossible de supprimer le secret actif.',
     no_active_secret: 'Aucun secret actif trouvé.',
     entity_id_required: "L'identifiant de l'entité est requis pour générer les métadonnées.",

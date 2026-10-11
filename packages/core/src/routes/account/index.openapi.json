@@ -13,7 +13,18 @@
         "description": "Get profile for the user.",
         "responses": {
           "200": {
-            "description": "The profile was retrieved successfully."
+            "description": "The profile was retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "cimdClientId": {
+                      "description": "The identifier of the CIMD (client ID metadata document) client from the user's first consent. `null` unless the user's first consent was granted to a CIMD client. Mutually exclusive with `applicationId`. Only returned with the `profile` scope."
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       },
@@ -46,7 +57,18 @@
         },
         "responses": {
           "200": {
-            "description": "The profile was updated successfully."
+            "description": "The profile was updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "cimdClientId": {
+                      "description": "The identifier of the CIMD (client ID metadata document) client from the user's first consent. `null` unless the user's first consent was granted to a CIMD client. Mutually exclusive with `applicationId`. Only returned with the `profile` scope."
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "The request body is invalid."
@@ -122,7 +144,7 @@
       "post": {
         "operationId": "UpdatePassword",
         "summary": "Update password",
-        "description": "Update password for the user, a logto-verification-id in header is required for checking sensitive permissions.",
+        "description": "Update password for the user. A logto-verification-id header is required when the user has at least one security verification method: password, primary email, or primary phone. The header can be omitted only when the user has none of these methods and is setting the first password.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -140,8 +162,8 @@
           "204": {
             "description": "The password was updated successfully."
           },
-          "403": {
-            "description": "Permission denied, the verification record is invalid."
+          "401": {
+            "description": "Permission denied, verification is required or the verification record is invalid."
           }
         }
       }
@@ -270,7 +292,7 @@
             "description": "The new verification record is invalid."
           },
           "403": {
-            "description": "Permission denied, the verification record is invalid."
+            "description": "Permission denied, the application is a third-party application. The Account API only accepts mutations from first-party applications."
           }
         }
       },
@@ -317,7 +339,7 @@
             "description": "The new verification record is invalid."
           },
           "403": {
-            "description": "Permission denied, the verification record is invalid."
+            "description": "Permission denied, the application is a third-party application. The Account API only accepts mutations from first-party applications."
           }
         }
       },
@@ -342,7 +364,7 @@
       "post": {
         "operationId": "AddUserIdentities",
         "summary": "Add a user identity",
-        "description": "Add an identity (social identity) to the user, a logto-verification-id in header is required for checking sensitive permissions, and a verification record for the social identity is required.",
+        "description": "Add an identity (social identity) to the user. A logto-verification-id header is required when the user has at least one security verification method: password, primary email, or primary phone. The header can be omitted only when the user has none of these methods. A verification record for the new social identity is always required.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -359,6 +381,47 @@
         "responses": {
           "204": {
             "description": "The identity was added successfully."
+          },
+          "400": {
+            "description": "The request body is invalid or the social identity field is not editable."
+          },
+          "401": {
+            "description": "Permission denied, identity verification is required or insufficient scope."
+          },
+          "422": {
+            "description": "The new verification record is invalid or the identity is already in use."
+          }
+        }
+      },
+      "put": {
+        "operationId": "ReplaceMyAccountIdentity",
+        "summary": "Replace a user identity",
+        "description": "Replace (upsert) an identity (social identity) for the user. Creates the identity if absent, replaces it otherwise. Idempotent. Unlike POST, this allows replacing an existing identity for the same social target. When replacing with a different social user ID, previously stored third-party tokens for the old identity are cleared. A logto-verification-id header is required when the user has at least one security verification method: password, primary email, or primary phone. The header can be omitted only when the user has none of these methods. A verification record for the new social identity is always required.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "newIdentifierVerificationRecordId": {
+                    "description": "The identifier verification record ID for the new social identity ownership verification."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The identity was replaced successfully."
+          },
+          "400": {
+            "description": "The request body is invalid or the social identity field is not editable."
+          },
+          "401": {
+            "description": "Permission denied, identity verification is required or insufficient scope."
+          },
+          "422": {
+            "description": "The new verification record is invalid or the identity is already in use."
           }
         }
       }
@@ -367,7 +430,7 @@
       "delete": {
         "operationId": "DeleteIdentity",
         "summary": "Delete a user identity",
-        "description": "Delete an identity (social identity) from the user, a logto-verification-id in header is required for checking sensitive permissions. The request is rejected if it would remove the user's last identifier.",
+        "description": "Delete an identity (social identity) from the user. A logto-verification-id header is required when the user has at least one security verification method: password, primary email, or primary phone. The header can be omitted only when the user has none of these methods. The request is rejected if it would remove the user's last identifier.",
         "responses": {
           "204": {
             "description": "The identity was deleted successfully."
@@ -633,10 +696,10 @@
       "get": {
         "operationId": "GetSessions",
         "summary": "Get all active sessions",
-        "description": "Retrieve all non-expired sessions for the user, including session metadata and interaction details when available. A logto-verification-id in header is required for checking sensitive session details.",
+        "description": "Retrieve all non-expired sessions for the user, including session metadata and interaction details when available. A logto-verification-id in header is required for checking sensitive session details. Each entry includes an `isCurrent` boolean: `true` for the entry whose OIDC session backs the calling access token, `false` for the others. Use this to mark the \"This device\" entry in session-management UIs and to avoid revoking the caller's own session. At most one entry is `true` per response. Zero entries are tagged when the calling access token has no matching session uid — for example, the caller has revoked its own session but the token has not yet expired, or the token was issued from a non-session-backed grant.",
         "responses": {
           "200": {
-            "description": "Return a list of non-expired sessions of the user."
+            "description": "Return a list of non-expired sessions of the user. At most one entry has `isCurrent: true` per request."
           },
           "401": {
             "description": "Permission denied, the verification record is invalid or the session does not have the required scope to access session details."
@@ -711,6 +774,82 @@
           },
           "401": {
             "description": "Permission denied, the verification record is invalid or the session does not have the required scope to revoke sessions."
+          }
+        }
+      }
+    },
+    "/api/my-account/trusted-devices": {
+      "get": {
+        "operationId": "GetTrustedDevices",
+        "summary": "Get trusted devices",
+        "description": "Retrieve all active trusted devices for the signed-in user. A logto-verification-id in header and the trusted-devices scope are required. Each entry includes isCurrent, which is true only when the browser's trusted-device cookie passes full credential validation for that record.",
+        "responses": {
+          "200": {
+            "description": "A list of the signed-in user's active trusted devices."
+          },
+          "401": {
+            "description": "Permission denied, the verification record is invalid or the access token does not include the trusted-devices scope."
+          }
+        }
+      }
+    },
+    "/api/my-account/trusted-devices/{trustedDeviceId}": {
+      "delete": {
+        "operationId": "DeleteTrustedDeviceById",
+        "summary": "Delete a trusted device",
+        "description": "Delete a trusted device owned by the signed-in user. Deleting the current trusted device clears its cookie without ending the login session.",
+        "responses": {
+          "204": {
+            "description": "The trusted device was deleted successfully."
+          },
+          "400": {
+            "description": "The field is not editable."
+          },
+          "401": {
+            "description": "Permission denied, the verification record is invalid or the access token does not include the trusted-devices scope."
+          },
+          "403": {
+            "description": "The request was made by a third-party application."
+          },
+          "404": {
+            "description": "The trusted device was not found or does not belong to the signed-in user."
+          }
+        }
+      }
+    },
+    "/api/my-account/user-assets/avatar": {
+      "post": {
+        "operationId": "UploadAccountAvatar",
+        "summary": "Upload account avatar",
+        "description": "Upload a single avatar image to the configured storage provider and return the public URL of the uploaded asset. Requires the `profile` scope and the `avatar` field to be editable in the account center configuration. The returned URL can then be used as the value for the avatar field via `PATCH /api/my-account`.",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "description": "The avatar image file to upload. Must be an allowed image type and not exceed the maximum upload file size."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The asset was uploaded successfully."
+          },
+          "400": {
+            "description": "The request is invalid (e.g. file too large, image type not allowed, storage is not configured, or the avatar field is not editable)."
+          },
+          "401": {
+            "description": "Permission denied, the access token does not include the `profile` scope."
+          },
+          "403": {
+            "description": "Permission denied, the application is a third-party application."
+          },
+          "500": {
+            "description": "Failed to upload the file to the storage provider."
           }
         }
       }

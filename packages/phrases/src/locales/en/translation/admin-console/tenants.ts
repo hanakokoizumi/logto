@@ -10,6 +10,44 @@ const tenants = {
     oidc_configs: 'OIDC configs',
     subscription: 'Plan and billing',
     billing_history: 'Billing history',
+    license: 'License',
+  },
+  license: {
+    purchase_title: 'SELF-HOSTED PLANS',
+    purchase_description:
+      'Self-hosted Pro and Enterprise unlock paid features on your own instance, such as hiding the Logto branding, bringing your own UI, IdP-initiated SSO, Console collaboration, and unlimited SAML applications. Buy a plan to get your license key.',
+    purchase_button: 'View self-hosted plans',
+    install_title: 'INSTALL LICENSE',
+    install_description: 'Paste the license key you got after purchasing a self-hosted plan.',
+    install_button: 'Install license',
+    key_field: 'License key',
+    key_field_description:
+      'The key is verified on your instance and never leaves it. Get a fresh key from your Logto account if the one you have has expired.',
+    key_placeholder: 'Paste your license key here',
+    installed_toast: 'License installed successfully.',
+    details_title: 'LICENSE',
+    details_description: 'The license installed on this instance and what it grants.',
+    plan_field: 'Plan',
+    environment_field: 'Environment',
+    environment_production: 'Production',
+    environment_non_production: 'Non-production',
+    expires_at_field: 'Expires on',
+    installed_at_field: 'Installed on',
+    last_refreshed_at_field: 'Last refreshed on',
+    grace_ends_at_field: 'Grace period ends on',
+    refresh_expired_description:
+      'The license key expired on {{expiresAt}}. Licensed features remain available until {{graceEndsAt}} while Logto tries to refresh it.',
+    refresh_refused_description:
+      'The license refresh was refused because the license is {{reason}}. Licensed features remain available until {{graceEndsAt}}.',
+    refusal_reason_canceled: 'canceled',
+    refusal_reason_unpaid: 'unpaid',
+    refusal_reason_expired: 'expired',
+    refusal_reason_revoked: 'revoked',
+    refusal_reason_unknown: 'not available',
+    grace_expired_description:
+      'The license grace period ended on {{graceEndsAt}}. This deployment has reverted to OSS defaults. Get a fresh license key from Logto Cloud and install it again.',
+    get_fresh_key_button: 'Get a fresh license key',
+    replace_button: 'Replace license',
   },
   members: {
     card_title: 'Manage tenants more securely with Logto Cloud',
@@ -36,6 +74,10 @@ const tenants = {
       created_success: 'Console operator created.',
       deleted_success: 'Console operator removed.',
     },
+    self_hosted_card_title: 'Manage tenants more securely with self-hosted plans',
+    self_hosted_card_description:
+      'Add admins or collaborators to your tenant without sharing a single admin account.',
+    self_hosted_card_action: 'Explore self-hosted plans',
   },
   settings: {
     title: 'SETTINGS',
@@ -60,6 +102,16 @@ const tenants = {
     tenant_mfa: 'Multi-factor authentication',
     tenant_mfa_description:
       'Require your members to set up multi-factor authentication to access this tenant.',
+    oss_description: 'Manage how members access Console on this instance.',
+    tenant_mfa_confirm_title: 'Require MFA for all members?',
+    tenant_mfa_confirm_description:
+      'These members have not set up MFA yet. They stay signed in, and will be asked to set it up the next time they sign in:',
+    tenant_mfa_confirm_self:
+      'You have not set up MFA either. Set it up in your account settings before your next sign-in.',
+    tenant_mfa_confirm_button: 'Require MFA',
+    tenant_mfa_setup_required:
+      'This tenant requires multi-factor authentication. Set it up now, or you will be asked to at your next sign-in.',
+    tenant_mfa_setup_action: 'Set up MFA',
     enterprise_sso: 'Enterprise SSO',
     enterprise_sso_description:
       "Available on paid plans. Contact us to enable enterprise SSO so all members can sign in to the Logto Cloud Console using your organization's identity provider.",

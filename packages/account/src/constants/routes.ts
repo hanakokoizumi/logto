@@ -1,4 +1,5 @@
 export const securityRoute = '/security';
+export const sessionsRoute = '/sessions';
 export const profileRoute = '/profile';
 export const emailRoute = '/email';
 export const phoneRoute = '/phone';
@@ -25,6 +26,8 @@ export const socialRoutePrefix = '/social';
 export const socialCallbackRoutePrefix = '/callback/social';
 
 export const getSocialAddRoute = (connectorId: string) => `${socialRoutePrefix}/${connectorId}`;
+export const getSocialChangeRoute = (connectorId: string) =>
+  `${socialRoutePrefix}/${connectorId}/change`;
 export const getSocialRemoveRoute = (connectorId: string) =>
   `${socialRoutePrefix}/${connectorId}/remove`;
 export const getSocialCallbackRoute = (connectorId: string) =>

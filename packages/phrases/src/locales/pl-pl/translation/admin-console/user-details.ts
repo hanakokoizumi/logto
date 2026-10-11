@@ -19,6 +19,14 @@ const user_details = {
     new_password: 'Nowe hasło:',
     password: 'Hasło:',
   },
+  expire_password: {
+    button: 'Wygaśnięcie hasła',
+    title: 'Czy na pewno chcesz, aby to hasło wygasło?',
+    content:
+      'Użytkownik będzie musiał zresetować hasło przy następnym logowaniu. Tej akcji nie można cofnąć.',
+    success: 'Hasło użytkownika zostało oznaczone jako wygasłe.',
+    not_enabled_tooltip: 'Polityka wygasania haseł nie jest włączona.',
+  },
   tab_settings: 'Ustawienia',
   tab_roles: 'Role użytkowników',
   tab_logs: 'Logi użytkownika',
@@ -174,7 +182,7 @@ const user_details = {
     access_created_at_column: 'Dostęp utworzono',
     revoke_access_title: 'Cofnąć dostęp?',
     revoke_access_description:
-      'Ta operacja cofnie dostęp aplikacji do konta tego użytkownika na wszystkich urządzeniach. Użytkownik musi ponownie udzielić autoryzacji, aby przywrócić dostęp.',
+      'Ta operacja cofnie dostęp aplikacji do konta tego użytkownika na wszystkich urządzeniach. Użytkownik musi ponownie udzielić autoryzacji, aby przywrócić dostęp. Wcześniej wydane tokeny dostępu mogą pozostać ważne do czasu ich wygaśnięcia.',
   },
   connections: {
     title: 'Połączenie',

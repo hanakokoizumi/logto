@@ -15,6 +15,15 @@ const error = {
     "Le nom d'utilisateur ne doit pas commencer par « tg_ ».",
   username_invalid_charset:
     "Le nom d'utilisateur ne doit contenir que des lettres, des chiffres ou des caractères de soulignement.",
+  username_too_short: "Le nom d'utilisateur doit comporter au moins {{min}} caractères.",
+  username_too_long: "Le nom d'utilisateur doit comporter au plus {{max}} caractères.",
+  username_uppercase_not_allowed:
+    "Les lettres majuscules ne sont pas autorisées dans les noms d'utilisateur.",
+  username_lowercase_not_allowed:
+    "Les lettres minuscules ne sont pas autorisées dans les noms d'utilisateur.",
+  username_numbers_not_allowed: "Les chiffres ne sont pas autorisés dans les noms d'utilisateur.",
+  username_underscore_not_allowed:
+    "Les caractères de soulignement ne sont pas autorisés dans les noms d'utilisateur.",
   invalid_email: "L'email n'est pas valide",
   invalid_phone: "Le numéro de téléphone n'est pas valide",
   passwords_do_not_match: 'Les mots de passe ne correspondent pas',
@@ -32,9 +41,19 @@ const error = {
   invalid_link: 'Lien invalide',
   invalid_link_description: "Votre jeton à usage unique a peut-être expiré ou n'est plus valide.",
   captcha_verification_failed: 'Erreur lors de la vérification du captcha.',
+  send_verification_code_failed:
+    "Échec de l'envoi du code de vérification. Veuillez réessayer plus tard.",
+  send_verification_code_failed_use_password:
+    "Échec de l'envoi du code de vérification. Veuillez plutôt vous connecter avec votre mot de passe.",
   terms_acceptance_required: 'Acceptation des conditions requise',
   terms_acceptance_required_description: 'Vous devez accepter les conditions pour continuer.',
   something_went_wrong: 'Quelque chose a mal tourné',
+  account_suspended: 'Compte suspendu',
+  account_suspended_description:
+    "Ce compte a été suspendu. Veuillez contacter l'administrateur pour obtenir de l'aide.",
+  access_denied: 'Accès refusé',
+  application_access_denied:
+    "Vous n'avez pas la permission d'accéder à cette application.\nVeuillez contacter votre administrateur pour obtenir de l'aide.",
   feature_not_enabled:
     "Vous n'avez pas la permission d'accéder à cette fonctionnalité. Veuillez contacter votre administrateur pour obtenir de l'aide.",
 };
