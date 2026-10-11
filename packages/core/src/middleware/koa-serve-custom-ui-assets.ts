@@ -29,11 +29,9 @@ export default function koaServeCustomUiAssets(customUiAssetId: string) {
   const { experienceBlobsProviderConfig } = SystemContext.shared;
   assertThat(
     experienceBlobsProviderConfig &&
-      /**
-       * Self-hosted plans: Bring your UI on the deployment's own storage, served from any
-       * provider. Removed together with the other self-hosted plans guards at launch.
-       */
-      (EnvSet.values.isDevFeaturesEnabled ||
+      // A self-hosted deployment serves its custom UI from its configured storage provider.
+      (!EnvSet.values.isCloud ||
+        EnvSet.values.isDevFeaturesEnabled ||
         experienceBlobsProviderConfig.provider === 'AzureStorage'),
     'storage.not_configured'
   );

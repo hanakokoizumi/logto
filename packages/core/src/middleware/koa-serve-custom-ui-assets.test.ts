@@ -195,7 +195,8 @@ describe('koaServeCustomUiAssets middleware', () => {
 
   describe('with an S3-compatible storage', () => {
     beforeEach(() => {
-      // eslint-disable-next-line @silverhand/fp/no-mutation
+      mockedS3DownloadFile.mockReset();
+      // eslint-disable-next-line @silverhand/fp/no-mutation -- Replace the provider for this storage fixture.
       SystemContext.shared.experienceBlobsProviderConfig = {
         provider: StorageProvider.S3Storage,
         endpoint: 'http://localhost:9000',
@@ -206,7 +207,7 @@ describe('koaServeCustomUiAssets middleware', () => {
     });
 
     afterEach(() => {
-      // eslint-disable-next-line @silverhand/fp/no-mutation
+      // eslint-disable-next-line @silverhand/fp/no-mutation -- Restore the provider after this storage fixture.
       SystemContext.shared.experienceBlobsProviderConfig = experienceBlobsProviderConfig;
     });
 
@@ -231,9 +232,36 @@ describe('koaServeCustomUiAssets middleware', () => {
       expect(ctx.body).toEqual(mockBodyStream);
     });
 
-    it('should only serve from Azure storage without dev features', async () => {
-      const { isDevFeaturesEnabled } = EnvSet.values;
+    it('should serve self-hosted custom UI from S3 without dev features', async () => {
+      const { isDevFeaturesEnabled, isCloud } = EnvSet.values;
       Reflect.set(EnvSet.values, 'isDevFeaturesEnabled', false);
+      Reflect.set(EnvSet.values, 'isCloud', false);
+      const mockBodyStream = Readable.from('<html>Custom UI</html>');
+      mockedS3DownloadFile.mockResolvedValueOnce({
+        contentType: 'text/html',
+        readableStreamBody: mockBodyStream,
+      });
+      const ctx = createMockContext({ url: '/sign-in' });
+
+      try {
+        await koaServeCustomUiAssets('custom-ui-asset-id')(ctx, next);
+        expect(ctx.type).toEqual('text/html');
+        expect(ctx.body).toEqual(mockBodyStream);
+        expect(mockedS3DownloadFile).toHaveBeenCalledWith(
+          'default/custom-ui-asset-id/index.html',
+          undefined,
+          undefined
+        );
+      } finally {
+        Reflect.set(EnvSet.values, 'isDevFeaturesEnabled', isDevFeaturesEnabled);
+        Reflect.set(EnvSet.values, 'isCloud', isCloud);
+      }
+    });
+
+    it('should only serve Cloud custom UI from Azure without dev features', async () => {
+      const { isDevFeaturesEnabled, isCloud } = EnvSet.values;
+      Reflect.set(EnvSet.values, 'isDevFeaturesEnabled', false);
+      Reflect.set(EnvSet.values, 'isCloud', true);
 
       try {
         expect(() => koaServeCustomUiAssets('custom-ui-asset-id')).toThrowError(
@@ -241,6 +269,7 @@ describe('koaServeCustomUiAssets middleware', () => {
         );
       } finally {
         Reflect.set(EnvSet.values, 'isDevFeaturesEnabled', isDevFeaturesEnabled);
+        Reflect.set(EnvSet.values, 'isCloud', isCloud);
       }
     });
   });
